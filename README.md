@@ -26,8 +26,8 @@ A high-performance, premium e-commerce application built with Next.js 14, TypeSc
 1.  **Clone the repository**
 
     ```bash
-    git clone https://github.com/yourusername/nextjs-luxury-store.git
-    cd nextjs-luxury-store
+    git clone https://github.com/yourusername/luxury-ecommerce-nextjs.git
+    cd luxury-ecommerce-nextjs
     ```
 
 2.  **Install dependencies**
