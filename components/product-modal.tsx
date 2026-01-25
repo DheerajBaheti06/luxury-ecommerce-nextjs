@@ -39,60 +39,27 @@ interface ProductModalProps {
   onClose: () => void;
 }
 
-// Mock reviews data
-const mockReviews = [
-  {
-    id: 1,
-    userName: "Alex Johnson",
-    rating: 5,
-    date: "2023-10-15",
-    title: "Excellent product!",
-    comment:
-      "This product exceeded my expectations. Great quality and fast delivery.",
-    helpful: 24,
-    notHelpful: 2,
-  },
-  {
-    id: 2,
-    userName: "Sam Wilson",
-    rating: 4,
-    date: "2023-09-22",
-    title: "Good value for money",
-    comment:
-      "Overall satisfied with the purchase. Minor issues with packaging but product is fine.",
-    helpful: 18,
-    notHelpful: 1,
-  },
-];
-
-// Mock suggestions data
-const mockSuggestions = [
-  {
-    id: "101",
-    name: "Wireless Bluetooth Earbuds",
-    price: 89,
-    originalPrice: 129,
-    rating: 4.5,
-    image:
-      "https://images.pexels.com/photos/3781527/pexels-photo-3781527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  },
-  {
-    id: "102",
-    name: "Smart Fitness Tracker",
-    price: 79,
-    originalPrice: 119,
-    rating: 4.3,
-    image:
-      "https://images.pexels.com/photos/267394/pexels-photo-267394.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  },
-];
-
-export function ProductModal({ product, onClose }: ProductModalProps) {
+export function ProductModal({
+  product: initialProduct,
+  onClose,
+}: ProductModalProps) {
   const { addItem: addToCart } = useCart();
   const { addItem: addToWishlist, isInWishlist, removeItem } = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [product, setProduct] = useState(initialProduct);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+
+  // State for detailed product data
+  const [features, setFeatures] = useState<string[]>(
+    initialProduct.features || []
+  );
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([]);
+  const [details, setDetails] = useState<{ [key: string]: any }>(
+    initialProduct.details || {}
+  );
 
   const incrementQuantity = () => setQuantity((q) => q + 1);
   const decrementQuantity = () => setQuantity((q) => Math.max(1, q - 1));
@@ -161,6 +128,66 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
     };
   }, []);
 
+  // Fetch detailed product data when modal opens
+  useEffect(() => {
+    const fetchProductDetails = async () => {
+      setLoadingDetails(true);
+      try {
+        const response = await fetch(`/api/products/${initialProduct.id}`);
+        if (response.ok) {
+          const detailedProduct = await response.json();
+
+          // Update product with detailed data
+          setProduct({
+            ...initialProduct,
+            ...detailedProduct,
+            price: parseFloat(String(detailedProduct.price)),
+            originalPrice: detailedProduct.discountPrice
+              ? parseFloat(String(detailedProduct.discountPrice))
+              : undefined,
+            rating:
+              detailedProduct.ratingsAverage || detailedProduct.rating || 0,
+            reviewCount:
+              detailedProduct.ratingsCount || detailedProduct.reviewCount || 0,
+            image:
+              detailedProduct.images?.[0] ||
+              detailedProduct.image ||
+              initialProduct.image,
+            category: detailedProduct.category?.name || initialProduct.category,
+            name:
+              detailedProduct.title ||
+              detailedProduct.name ||
+              initialProduct.name,
+          });
+
+          // Update detailed data
+          setFeatures(detailedProduct.features || []);
+          setReviews(detailedProduct.reviews || []);
+          setRelatedProducts(detailedProduct.relatedProducts || []);
+          setDetails({
+            ...(initialProduct.details || {}),
+            ...(detailedProduct.brand
+              ? { Brand: detailedProduct.brand.name }
+              : {}),
+            ...(detailedProduct.category
+              ? { Category: detailedProduct.category.name }
+              : {}),
+            Created: detailedProduct.createdAt || "N/A",
+            Updated: detailedProduct.updatedAt || "N/A",
+            // Add any other detailed information from the database
+          });
+        }
+      } catch (error) {
+        console.error("Failed to fetch product details:", error);
+      } finally {
+        setLoadingDetails(false);
+      }
+    };
+
+    // Always fetch detailed product data to get real reviews and related products
+    fetchProductDetails();
+  }, [initialProduct]);
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-0 sm:p-4 bg-black/70 backdrop-blur-sm"
@@ -192,7 +219,7 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                 {product.originalPrice &&
                   product.originalPrice > product.price && (
                     <div className="absolute top-3 sm:top-4 right-3 sm:right-4 bg-gradient-to-br from-lime-400 to-green-400 text-black text-xs sm:text-sm font-bold px-2 py-1 rounded-full shadow-sm">
-                      SAVE ${product.originalPrice - product.price}
+                      SAVE ${(product.originalPrice - product.price).toFixed(2)}
                     </div>
                   )}
                 {product.featured && (
@@ -272,7 +299,8 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                   className="flex-1 bg-gradient-to-br from-lime-400 to-green-400 text-black hover:from-lime-300 hover:to-green-300 text-sm sm:text-base h-8 sm:h-9 shadow-sm hover:shadow"
                 >
                   <ShoppingCart className="mr-1.5 h-4 w-4" />
-                  Add to Cart - ${(product.price * quantity).toFixed(2)}
+                  Add to Cart - $
+                  {(parseFloat(String(product.price)) * quantity).toFixed(2)}
                 </Button>
 
                 <Button
@@ -350,12 +378,23 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                     Key Highlights
                   </h3>
                   <ul className="space-y-2">
-                    {product.features.slice(0, 3).map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
+                    {features && features.length > 0 ? (
+                      features.slice(0, 5).map((feature, index) => (
+                        <li key={index} className="flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-lime-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-300 text-sm">
+                            {feature}
+                          </span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="flex items-start gap-2">
                         <CheckCircle className="h-4 w-4 text-lime-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-300 text-sm">{feature}</span>
+                        <span className="text-gray-300 text-sm">
+                          Loading features...
+                        </span>
                       </li>
-                    ))}
+                    )}
                   </ul>
                 </CardContent>
               </Card>
@@ -369,15 +408,26 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                     Key Features
                   </h3>
                   <ul className="space-y-2 sm:space-y-3">
-                    {product.features.map((feature, index) => (
-                      <li
-                        key={index}
-                        className="flex items-start gap-2 sm:gap-3"
-                      >
+                    {features && features.length > 0 ? (
+                      features.map((feature, index) => (
+                        <li
+                          key={index}
+                          className="flex items-start gap-2 sm:gap-3"
+                        >
+                          <CheckCircle className="h-4 w-4 text-lime-400 mt-0.5 flex-shrink-0" />
+                          <span className="text-gray-300 text-sm">
+                            {feature}
+                          </span>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="flex items-start gap-2 sm:gap-3">
                         <CheckCircle className="h-4 w-4 text-lime-400 mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-300 text-sm">{feature}</span>
+                        <span className="text-gray-300 text-sm">
+                          Loading features...
+                        </span>
                       </li>
-                    ))}
+                    )}
                   </ul>
                 </CardContent>
               </Card>
@@ -391,19 +441,25 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                     Product Details
                   </h3>
                   <dl className="grid grid-cols-1 gap-2 sm:gap-4">
-                    {Object.entries(product.details).map(([key, value]) => (
-                      <div
-                        key={key}
-                        className="border-b border-white/10 pb-2 last:border-0 last:pb-0"
-                      >
-                        <dt className="text-xs sm:text-sm text-gray-500">
-                          {key}
-                        </dt>
-                        <dd className="font-medium text-gray-300 text-sm">
-                          {String(value)}
-                        </dd>
+                    {details && Object.keys(details).length > 0 ? (
+                      Object.entries(details).map(([key, value]) => (
+                        <div
+                          key={key}
+                          className="border-b border-white/10 pb-2 last:border-0 last:pb-0"
+                        >
+                          <dt className="text-xs sm:text-sm text-gray-500">
+                            {key}
+                          </dt>
+                          <dd className="font-medium text-gray-300 text-sm">
+                            {String(value)}
+                          </dd>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-gray-400 text-sm">
+                        Loading details...
                       </div>
-                    ))}
+                    )}
                   </dl>
                 </CardContent>
               </Card>
@@ -417,37 +473,45 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
                     Customer Reviews
                   </h3>
                   <div className="space-y-4 sm:space-y-6">
-                    {mockReviews.map((review) => (
-                      <div
-                        key={review.id}
-                        className="border-b border-white/10 pb-4 last:border-0 last:pb-0"
-                      >
-                        <div className="flex justify-between">
-                          <div>
-                            <h4 className="font-semibold text-sm text-white">
-                              {review.title}
-                            </h4>
-                            <div className="flex items-center mt-1">
-                              <div className="flex">
-                                {renderStars(review.rating)}
+                    {reviews && reviews.length > 0 ? (
+                      reviews.map((review) => (
+                        <div
+                          key={review.id}
+                          className="border-b border-white/10 pb-4 last:border-0 last:pb-0"
+                        >
+                          <div className="flex justify-between">
+                            <div>
+                              <h4 className="font-semibold text-sm text-white">
+                                {review.title}
+                              </h4>
+                              <div className="flex items-center mt-1">
+                                <div className="flex">
+                                  {renderStars(review.rating)}
+                                </div>
+                                <span className="ml-2 text-xs text-gray-500">
+                                  {review.userName}
+                                </span>
+                                <span className="mx-1 sm:mx-2 text-gray-600">
+                                  •
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {review.date}
+                                </span>
                               </div>
-                              <span className="ml-2 text-xs text-gray-500">
-                                {review.userName}
-                              </span>
-                              <span className="mx-1 sm:mx-2 text-gray-600">
-                                •
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                {review.date}
-                              </span>
                             </div>
                           </div>
+                          <p className="text-gray-400 mt-2 text-sm">
+                            {review.comment}
+                          </p>
                         </div>
-                        <p className="text-gray-400 mt-2 text-sm">
-                          {review.comment}
-                        </p>
+                      ))
+                    ) : (
+                      <div className="text-gray-400 text-sm">
+                        {loadingDetails
+                          ? "Loading reviews..."
+                          : "No reviews available for this product."}
                       </div>
-                    ))}
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -460,57 +524,65 @@ export function ProductModal({ product, onClose }: ProductModalProps) {
               You might also like
             </h3>
             <div className="grid grid-cols-1 gap-3 sm:gap-4">
-              {mockSuggestions.map((suggestion) => (
-                <Card
-                  key={suggestion.id}
-                  className="border border-white/10 bg-gray-900/50 shadow-sm hover:shadow-md transition-shadow"
-                >
-                  <CardContent className="p-3 sm:p-4">
-                    <div className="flex gap-3 sm:gap-4">
-                      <div className="aspect-square w-16 sm:w-20 overflow-hidden rounded-lg">
-                        <ImagePlaceholder
-                          src={suggestion.image}
-                          alt={suggestion.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm mb-1 line-clamp-2 text-white">
-                          {suggestion.name}
-                        </h4>
-                        <div className="flex items-center mb-1">
-                          <div className="flex">
-                            {renderStars(suggestion.rating)}
-                          </div>
-                          <span className="text-xs text-gray-500 ml-1">
-                            ({suggestion.rating})
-                          </span>
+              {relatedProducts && relatedProducts.length > 0 ? (
+                relatedProducts.map((suggestion) => (
+                  <Card
+                    key={suggestion.id}
+                    className="border border-white/10 bg-gray-900/50 shadow-sm hover:shadow-md transition-shadow"
+                  >
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex gap-3 sm:gap-4">
+                        <div className="aspect-square w-16 sm:w-20 overflow-hidden rounded-lg">
+                          <ImagePlaceholder
+                            src={suggestion.image}
+                            alt={suggestion.name}
+                            className="w-full h-full object-cover"
+                          />
                         </div>
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <span className="font-bold text-sm text-lime-400">
-                              ${suggestion.price}
+                        <div className="flex-1">
+                          <h4 className="font-medium text-sm mb-1 line-clamp-2 text-white">
+                            {suggestion.name}
+                          </h4>
+                          <div className="flex items-center mb-1">
+                            <div className="flex">
+                              {renderStars(suggestion.rating)}
+                            </div>
+                            <span className="text-xs text-gray-500 ml-1">
+                              ({suggestion.rating})
                             </span>
-                            {suggestion.originalPrice &&
-                              suggestion.originalPrice > suggestion.price && (
-                                <span className="text-xs text-gray-500 line-through ml-1">
-                                  ${suggestion.originalPrice}
-                                </span>
-                              )}
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="h-6 px-2 text-xs border-lime-400/50 text-lime-400 hover:bg-lime-400/20"
-                          >
-                            Add
-                          </Button>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="font-bold text-sm text-lime-400">
+                                ${suggestion.price}
+                              </span>
+                              {suggestion.originalPrice &&
+                                suggestion.originalPrice > suggestion.price && (
+                                  <span className="text-xs text-gray-500 line-through ml-1">
+                                    ${suggestion.originalPrice}
+                                  </span>
+                                )}
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="h-6 px-2 text-xs border-lime-400/50 text-lime-400 hover:bg-lime-400/20"
+                            >
+                              Add
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="text-gray-400 text-sm">
+                  {loadingDetails
+                    ? "Loading related products..."
+                    : "No related products available."}
+                </div>
+              )}
             </div>
           </div>
         </div>

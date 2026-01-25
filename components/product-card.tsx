@@ -13,20 +13,50 @@ import ProductModal from "@/components/product-modal";
 // Define the props interface for type safety
 interface ProductCardProps {
   id: string;
-  name: string;
+  title?: string;
+  name?: string;
   description: string;
-  price: number;
-  originalPrice?: number;
-  rating: number;
-  reviewCount?: number;
+  price: string; // Price is a string in the database
+  discountPrice?: string;
+  originalPrice?: string;
+  images?: string[];
   image?: string;
+  brandId?: string;
+  ratingsAverage?: number;
+  ratingsCount?: number;
+  rating?: number;
+  reviewCount?: number;
+  createdAt?: string;
+  updatedAt?: string;
+  categoryId?: string;
+  category?: {
+    id: string;
+    name: string;
+    description?: string;
+    parentCategoryId?: string;
+  };
+  brand?: {
+    id: string;
+    name: string;
+    logo?: string;
+  };
+  variants?: {
+    id: string;
+    color: string;
+    size: string;
+    stock: number;
+    price: string;
+    image?: string;
+    productId: string;
+  }[];
   featured?: boolean;
+  // Additional props used in the component
   showWishlistButton?: boolean;
   showAddToCartButton?: boolean;
   showViewButton?: boolean;
   onAddToCart?: () => void;
   onWishlistToggle?: () => void;
-  productDetails?: any; // Add product details for modal
+  productDetails?: any;
 }
 
 export function ProductCard({
@@ -50,11 +80,6 @@ export function ProductCard({
   const [isWishlistLoading, setIsWishlistLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Add effect to log when modal state changes
-  useEffect(() => {
-    // console.log("Modal state changed:", isModalOpen);
-  }, [isModalOpen]);
-
   // Handle adding to cart
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -63,7 +88,12 @@ export function ProductCard({
     if (onAddToCart) {
       onAddToCart();
     } else {
-      addToCart({ id, name, price, image });
+      addToCart({
+        id,
+        name: name || "Unknown Product",
+        price: parseFloat(price),
+        image,
+      });
     }
 
     // Add visual feedback
@@ -92,7 +122,12 @@ export function ProductCard({
       if (isInWishlist(id)) {
         removeItem(id);
       } else {
-        toggleWishlist({ id, name, price, image });
+        toggleWishlist({
+          id,
+          name: name || "Unknown Product",
+          price: parseFloat(price),
+          image,
+        });
       }
     }
     setTimeout(() => setIsWishlistLoading(false), 300);
@@ -124,7 +159,7 @@ export function ProductCard({
         <div className="relative aspect-[4/3] overflow-hidden px-2 pt-2">
           <ImagePlaceholder
             src={image || "/images/placeholder-product.svg"}
-            alt={name}
+            alt={name || "Product Image"}
             className="w-full h-full"
             imgClassName="object-contain transition-transform duration-500 group-hover:scale-105"
           />
@@ -137,9 +172,9 @@ export function ProductCard({
               FEATURED
             </div>
           )}
-          {originalPrice && originalPrice > price && (
+          {originalPrice && parseFloat(originalPrice) > parseFloat(price) && (
             <div className="rounded-full bg-gradient-to-br from-lime-400 to-green-400 px-2 py-1 text-[10px] font-bold text-black shadow-sm">
-              SAVE ${originalPrice - price}
+              SAVE ${(parseFloat(originalPrice) - parseFloat(price)).toFixed(2)}
             </div>
           )}
         </div>
@@ -213,7 +248,41 @@ export function ProductCard({
       {isModalOpen &&
         productDetails &&
         createPortal(
-          <ProductModal product={productDetails} onClose={handleCloseModal} />,
+          <ProductModal
+            product={{
+              ...productDetails,
+              // Ensure required fields are present
+              name:
+                productDetails?.title ||
+                productDetails?.name ||
+                "Unknown Product",
+              price: parseFloat(productDetails?.price || "0"),
+              originalPrice: productDetails?.originalPrice
+                ? parseFloat(productDetails.originalPrice)
+                : undefined,
+              rating:
+                productDetails?.ratingsAverage || productDetails?.rating || 0,
+              reviewCount:
+                productDetails?.ratingsCount ||
+                productDetails?.reviewCount ||
+                0,
+              image: productDetails?.images?.[0] || productDetails?.image || "",
+              category: productDetails?.category?.name || "General",
+              features: [
+                "High quality materials",
+                "Durable construction",
+                "Easy to use",
+                "Warranty included",
+              ],
+              details: {
+                Brand: productDetails?.brand?.name || "Unknown",
+                Category: productDetails?.category?.name || "General",
+                Created: productDetails?.createdAt || "N/A",
+                Updated: productDetails?.updatedAt || "N/A",
+              },
+            }}
+            onClose={handleCloseModal}
+          />,
           document.body
         )}
     </>

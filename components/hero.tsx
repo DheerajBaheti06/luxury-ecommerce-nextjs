@@ -120,7 +120,7 @@ export function Hero() {
           <Button
             asChild
             size="lg"
-            className="rounded-full hover:bg-lime-400 px-8 py-4 text-lg font-semibold text-black transition-all hover:scale-105 bg-white hover:transition-all font-bold hover:outline-10 hover:outline-lime-400 hover:text-black hover:shadow-md"
+            className="rounded-full bg-white text-black font-bold text-lg px-8 py-4 transition-all hover:bg-lime-400 hover:scale-105 hover:shadow-lg hover:shadow-lime-400/20"
           >
             <Link href="/products">Shop Now</Link>
           </Button>

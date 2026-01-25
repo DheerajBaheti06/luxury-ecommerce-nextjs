@@ -4,7 +4,15 @@ import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { X, ArrowRight, ChevronLeft, ShoppingCart } from "lucide-react";
+import {
+  X,
+  ArrowRight,
+  ChevronLeft,
+  ShoppingCart,
+  ShieldCheck,
+  Truck,
+  Gem,
+} from "lucide-react";
 
 interface OrderState {
   product: {
@@ -12,6 +20,7 @@ interface OrderState {
     name: string;
     price: string;
     priceValue: number;
+    description: string;
   } | null;
   quantity: number;
   addons: {
@@ -21,48 +30,27 @@ interface OrderState {
   }[];
 }
 
-const PRODUCTS = {
-  startup: {
-    id: "startup",
-    name: "Starter 3D Render",
-    price_usd: 299,
-    price_inr: 25000,
-    description: "Perfect for single product visualization",
-  },
-  pro: {
-    id: "pro",
-    name: "Professional 3D Animation",
-    price_usd: 699,
-    price_inr: 55000,
-    description: "Ideal for marketing campaigns",
-  },
-  premium: {
-    id: "premium",
-    name: "Premium 3D Suite",
-    price_usd: 2049,
-    price_inr: 170500,
-    description: "Complete 3D solution for enterprises",
-  },
-};
-
 const ADDONS = {
-  modeling: {
-    name: "3D Modeling Service",
-    price_usd: 120,
-    price_inr: 10000,
-    description: "Professional 3D modeling for your products",
-  },
-  renders: {
-    name: "Additional Renders",
-    price_usd: 60,
-    price_inr: 5000,
-    description: "Extra high-quality renders (10 images)",
-  },
-  animation: {
-    name: "Extended Animation",
+  concierge: {
+    name: "VIP Concierge Service",
     price_usd: 150,
     price_inr: 12000,
-    description: "Additional 10 seconds of animation",
+    description: "24/7 personal support for your acquisition",
+    icon: Gem,
+  },
+  warranty: {
+    name: "Lifetime Authenticity Warranty",
+    price_usd: 99,
+    price_inr: 8000,
+    description: "Verified certificate of authenticity on blockchain",
+    icon: ShieldCheck,
+  },
+  shipping: {
+    name: "Secure Armored Shipping",
+    price_usd: 250,
+    price_inr: 20000,
+    description: "Insured, tracked, and guarded delivery",
+    icon: Truck,
   },
 };
 
@@ -85,6 +73,7 @@ export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
   const [currency, setCurrency] = useState<Currency>("USD");
+  const [loadingError, setLoadingError] = useState<string | null>(null);
   const [order, setOrder] = useState<OrderState>({
     product: null,
     quantity: 1,
@@ -115,30 +104,52 @@ export default function CheckoutPage() {
     if (isInitialized || currency === null) return;
 
     const productId = searchParams.get("product");
-    if (productId && PRODUCTS[productId as keyof typeof PRODUCTS]) {
-      const productData = PRODUCTS[productId as keyof typeof PRODUCTS];
 
-      const product = {
-        id: productData.id,
-        name: productData.name,
-        price:
-          currency === "INR"
-            ? `₹${productData.price_inr.toLocaleString()}/-`
-            : `$${productData.price_usd}`,
-        priceValue:
-          currency === "INR" ? productData.price_inr : productData.price_usd,
-      };
+    async function fetchProduct() {
+      if (!productId) {
+        router.push("/products");
+        return;
+      }
 
-      setOrder({
-        product,
-        quantity: 1,
-        addons: [],
-      });
+      try {
+        const res = await fetch(`/api/products/${productId}`);
+        if (!res.ok) throw new Error("Product not found");
+        const productData = await res.json();
 
-      setIsInitialized(true);
-    } else {
-      router.push("/products");
+        // Adjust price based on currency (simple conversion for demo)
+        const priceValue = productData.discountPrice
+          ? parseFloat(productData.discountPrice)
+          : parseFloat(productData.price);
+
+        // If INR, we simply multiply by ~83 for demo purposes if the API returns USD
+        // But let's assume the DB prices are in USD.
+        const finalPriceValue =
+          currency === "INR" ? priceValue * 83 : priceValue;
+
+        const product = {
+          id: productData.id,
+          name: productData.title,
+          price:
+            currency === "INR"
+              ? `₹${finalPriceValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
+              : `$${finalPriceValue.toLocaleString()}`,
+          priceValue: finalPriceValue,
+          description: productData.description,
+        };
+
+        setOrder({
+          product,
+          quantity: 1,
+          addons: [],
+        });
+        setIsInitialized(true);
+      } catch (error) {
+        console.error(error);
+        setLoadingError("Product not found or unavailable.");
+      }
     }
+
+    fetchProduct();
   }, [searchParams, router, isInitialized, currency]);
 
   const calculateTotal = () => {
@@ -151,7 +162,7 @@ export default function CheckoutPage() {
 
   const formatPrice = (price: number) => {
     if (currency === "INR") {
-      return `₹${price.toLocaleString()}`;
+      return `₹${price.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
     } else {
       return `$${price.toLocaleString()}`;
     }
@@ -165,28 +176,28 @@ export default function CheckoutPage() {
 
   const handleBack = () => {
     if (currentStep === 1) {
-      router.push(`/products/${order.product?.id}`);
+      router.back();
       return;
     }
     setCurrentStep(currentStep - 1);
   };
 
   const generateWhatsAppMessage = () => {
-    let message = `Hi, I would like to order:\n\n`;
-    message += `📦 Product: ${order.product?.name} - ${order.product?.price}\n`;
+    let message = `Greetings, I am interested in acquiring:\n\n`;
+    message += `💎 Item: ${order.product?.name}\n`;
+    message += `💰 Price: ${order.product?.price}\n`;
     message += `🔢 Quantity: ${order.quantity}\n`;
 
     if (order.addons.length > 0) {
-      message += `\n➕ Add-ons:\n`;
+      message += `\n✨ Premium Additions:\n`;
       order.addons.forEach((addon) => {
         const addonPrice = formatPrice(addon.price);
         message += `  • ${addon.name} - ${addonPrice}\n`;
       });
     }
 
-    message += `\n💰 Total: ${formatPrice(calculateTotal())}\n\n`;
-    message += `Currency: ${currency}\n`;
-    message += `Please confirm the details and let me know the next steps.`;
+    message += `\n💳 Total Investment: ${formatPrice(calculateTotal())}\n\n`;
+    message += `Please assist me with the acquisition process.`;
 
     return encodeURIComponent(message);
   };
@@ -242,6 +253,17 @@ export default function CheckoutPage() {
   };
 
   // Show loading state until initialized
+  if (loadingError) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] flex flex-col items-center justify-center text-white space-y-4">
+        <h2 className="text-xl font-bold text-red-400">{loadingError}</h2>
+        <Button onClick={() => router.push("/")} variant="outline">
+          Return to Gallery
+        </Button>
+      </div>
+    );
+  }
+
   if (!isInitialized || !order.product) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
@@ -271,7 +293,7 @@ export default function CheckoutPage() {
             {/* Inline Product Name and Price */}
             <div className="flex items-center justify-between flex-1 mx-3 sm:mx-4">
               <div className="text-base font-semibold text-white sm:text-lg">
-                Checkout
+                Acquisition
               </div>
               <div className="text-base font-bold text-[#C6FF3A] sm:text-lg">
                 {formatPrice(calculateTotal())}
@@ -298,10 +320,10 @@ export default function CheckoutPage() {
             <div className="space-y-8 sm:space-y-10">
               <div className="text-center space-y-3 sm:space-y-4">
                 <h2 className="text-2xl font-bold text-white sm:text-3xl">
-                  Review Your Order
+                  Review Your Selection
                 </h2>
                 <p className="text-neutral-400 text-base leading-relaxed sm:text-lg">
-                  Confirm your product selection and quantity
+                  Confirm your exquisite choice
                 </p>
               </div>
 
@@ -312,14 +334,13 @@ export default function CheckoutPage() {
                       <h4 className="font-semibold text-white text-base sm:text-lg">
                         {order.product.name}
                       </h4>
-                      <p className="text-neutral-400 text-sm mt-0.5 sm:mt-1">
-                        {
-                          PRODUCTS[order.product.id as keyof typeof PRODUCTS]
-                            ?.description
-                        }
+                      <p className="text-neutral-400 text-sm mt-0.5 sm:mt-1 line-clamp-1">
+                        {order.product.description}
                       </p>
                     </div>
-                    <span className="font-bold text-white text-base sm:text-lg">
+                    <span className="font-bold text-white text-base sm:text-lg ml-2">
+                      {/* Display Unit Price if quantity > 1 would be nice, but total is shown below */}
+                      {/* This is unit price? No, it's confusing. Let's just show Unit Price here */}
                       {order.product.price}
                     </span>
                   </div>
@@ -355,7 +376,7 @@ export default function CheckoutPage() {
                     </div>
                     <span className="text-2xl font-bold text-[#C6FF3A] sm:text-3xl">
                       {formatPrice(
-                        (order.product.priceValue || 0) * order.quantity
+                        (order.product.priceValue || 0) * order.quantity,
                       )}
                     </span>
                   </div>
@@ -366,7 +387,7 @@ export default function CheckoutPage() {
                 onClick={handleNext}
                 className="w-full h-12 text-base font-semibold bg-[#C6FF3A] text-black hover:bg-[#C6FF3A]/90 rounded-xl shadow-lg shadow-[#C6FF3A]/20 sm:h-16 sm:text-xl sm:rounded-2xl"
               >
-                Continue to Add-ons
+                Continue to Premium Services
                 <ArrowRight className="h-4 w-4 ml-2 sm:h-6 sm:w-6 sm:ml-3" />
               </Button>
             </div>
@@ -377,10 +398,10 @@ export default function CheckoutPage() {
             <div className="space-y-8 sm:space-y-10">
               <div className="text-center space-y-3 sm:space-y-4">
                 <h2 className="text-2xl font-bold text-white sm:text-3xl">
-                  Enhance Your Order
+                  Enhance Your Experience
                 </h2>
                 <p className="text-neutral-400 text-base leading-relaxed sm:text-lg">
-                  Add optional services to your purchase
+                  Select optional premium services
                 </p>
               </div>
 
@@ -391,6 +412,7 @@ export default function CheckoutPage() {
                       ? `+₹${addon.price_inr.toLocaleString()}`
                       : `+$${addon.price_usd}`;
                   const isSelected = order.addons.some((a) => a.id === addonId);
+                  const Icon = addon.icon;
 
                   return (
                     <Card
@@ -404,15 +426,21 @@ export default function CheckoutPage() {
                     >
                       <CardContent className="p-5 sm:p-6">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-semibold text-white text-base sm:text-lg">
-                              {addon.name}
-                            </h4>
-                            <p className="text-neutral-400 text-sm mt-1 sm:mt-2">
-                              {addon.description}
-                            </p>
+                          <div className="flex gap-3">
+                            {Icon && (
+                              <Icon className="h-5 w-5 text-[#C6FF3A] mt-1" />
+                            )}
+                            <div>
+                              <h4 className="font-semibold text-white text-base sm:text-lg">
+                                {addon.name}
+                              </h4>
+                              <p className="text-neutral-400 text-sm mt-1 sm:mt-2">
+                                {addon.description}
+                              </p>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
+
+                          <div className="flex flex-col items-end gap-2">
                             <span className="text-[#C6FF3A] font-bold text-sm sm:text-base">
                               {addonPrice}
                             </span>
@@ -447,7 +475,7 @@ export default function CheckoutPage() {
                   onClick={handleNext}
                   className="flex-1 h-12 text-base font-semibold bg-[#C6FF3A] text-black hover:bg-[#C6FF3A]/90 rounded-xl shadow-lg shadow-[#C6FF3A]/20 sm:h-16 sm:text-xl sm:rounded-2xl"
                 >
-                  Continue to Summary
+                  Summary
                   <ArrowRight className="h-4 w-4 ml-2 sm:h-6 sm:w-6 sm:ml-3" />
                 </Button>
               </div>
@@ -459,10 +487,10 @@ export default function CheckoutPage() {
             <div className="space-y-8 sm:space-y-10">
               <div className="text-center space-y-3 sm:space-y-4">
                 <h2 className="text-2xl font-bold text-white sm:text-3xl">
-                  Order Summary
+                  Acquisition Summary
                 </h2>
                 <p className="text-neutral-400 text-base leading-relaxed sm:text-lg">
-                  Review your selections before confirming
+                  Confirm your details before proceeding
                 </p>
               </div>
 
@@ -479,7 +507,7 @@ export default function CheckoutPage() {
                     </div>
                     <span className="font-bold text-white text-base sm:text-lg">
                       {formatPrice(
-                        (order.product.priceValue || 0) * order.quantity
+                        (order.product.priceValue || 0) * order.quantity,
                       )}
                     </span>
                   </div>
@@ -502,7 +530,7 @@ export default function CheckoutPage() {
 
                   <div className="flex justify-between items-center py-4 bg-[#C6FF3A]/10 rounded-xl px-4 mt-4 sm:py-6 sm:rounded-2xl sm:px-6 sm:mt-6">
                     <h4 className="text-lg font-bold text-white sm:text-xl">
-                      Total
+                      Total Investment
                     </h4>
                     <span className="text-2xl font-bold text-[#C6FF3A] sm:text-3xl">
                       {formatPrice(calculateTotal())}
@@ -516,7 +544,7 @@ export default function CheckoutPage() {
                 className="w-full h-12 text-base font-semibold bg-[#C6FF3A] text-black hover:bg-[#C6FF3A]/90 rounded-xl shadow-lg shadow-[#C6FF3A]/20 sm:h-16 sm:text-xl sm:rounded-2xl"
               >
                 <ShoppingCart className="h-5 w-5 mr-2 sm:h-6 sm:w-6" />
-                Confirm Order via WhatsApp
+                Contact Concierge (WhatsApp)
                 <ArrowRight className="h-4 w-4 ml-2 sm:h-6 sm:w-6 sm:ml-3" />
               </Button>
             </div>

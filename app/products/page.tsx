@@ -1,110 +1,103 @@
+import { prisma } from "@/lib/prisma";
+import { ProductGridClient } from "@/components/product-grid-client";
+import { Prisma } from "@prisma/client";
 
-import type { Metadata } from "next";
-import ProductsClientPage from "./products-client";
+export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Products | Skitbit - Professional 3D Services",
-  description:
-    "Browse our complete catalog of professional 3D services including renders, animations, and modeling.",
-  keywords: [
-    "3D products",
-    "3D services",
-    "3D rendering services",
-    "3D animation services",
-    "product visualization",
-    "3D modeling",
-  ],
-  openGraph: {
-    title: "Our 3D Services Catalog",
-    description:
-      "Professional 3D services for product visualization, animations, and marketing.",
-  },
-};
-
-export default function ProductsPage() {
-  return <ProductsClientPage />;
+interface ProductsPageProps {
+  searchParams: {
+    page?: string;
+    limit?: string;
+    search?: string;
+    category?: string;
+    sort?: string;
+  };
 }
 
-// Mock product data
-const products = [
-  {
-    id: "1",
-    name: "Premium 3D Render Service",
-    description: "High-quality 3D renders perfect for product showcases and marketing materials",
-    price: 299,
-    originalPrice: 399,
-    rating: 4.9,
-    reviewCount: 124,
-    image: "https://images.pexels.com/photos/164877/pexels-photo-164877.jpeg", // example product showcase image
-    category: "services",
-    featured: true,
-  },
-  {
-    id: "2",
-    name: "3D Animation Package",
-    description: "Complete 3D animation service for social media and advertising",
-    price: 699,
-    originalPrice: 899,
-    rating: 4.8,
-    reviewCount: 89,
-    image: "https://images.pexels.com/photos/267569/pexels-photo-267569.jpeg", // example animation workflow image
-    category: "services",
-    featured: true,
-  },
-  {
-    id: "3",
-    name: "Custom 3D Modeling",
-    description: "Professional 3D modeling for products, characters, and environments",
-    price: 1099,
-    originalPrice: 1299,
-    rating: 4.7,
-    reviewCount: 56,
-    image: "https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg", // example 3D modeling workstation
-    category: "services",
-    featured: false,
-  },
-  {
-    id: "4",
-    name: "Social Media Bundle",
-    description: "Complete package for social media content creation with 3D assets",
-    price: 1599,
-    originalPrice: 1999,
-    rating: 4.9,
-    reviewCount: 78,
-    image: "https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg", // example social media content creation
-    category: "bundles",
-    featured: true,
-  },
-  {
-    id: "5",
-    name: "E-commerce Product Pack",
-    description: "3D renders optimized for e-commerce platforms and online stores",
-    price: 899,
-    originalPrice: 1099,
-    rating: 4.6,
-    reviewCount: 42,
-    image: "https://images.pexels.com/photos/302769/pexels-photo-302769.jpeg", // example ecommerce product photo
-    category: "bundles",
-    featured: false,
-  },
-  {
-    id: "6",
-    name: "Architectural Visualization",
-    description: "Professional 3D architectural renders for real estate and construction",
-    price: 1999,
-    originalPrice: 2499,
-    rating: 4.8,
-    reviewCount: 31,
-    image: "https://images.pexels.com/photos/386015/pexels-photo-386015.jpeg", // example architectural visualization
-    category: "specialized",
-    featured: false,
-  },
-];
+export default async function ProductsPage({
+  searchParams,
+}: ProductsPageProps) {
+  // Parse params
+  const page = Math.max(1, parseInt(searchParams.page || "1"));
+  const limit = Math.max(1, Math.min(50, parseInt(searchParams.limit || "12"))); // Cap limit at 50, default 12
+  const search = searchParams.search || "";
+  const category = searchParams.category || "";
+  const sort = searchParams.sort || "latest";
 
+  // Build Prisma Where Clause
+  const where: Prisma.ProductWhereInput = {};
 
-const categories = [
-  { id: "all", name: "All Products" },
-  { id: "services", name: "Services" },
-  { id: "bundles", name: "Bundles" },
-  { id: "specialized", name: "Specialized" },
-];
+  if (search) {
+    where.OR = [
+      { title: { contains: search } }, // Case insensitive in SQLite usually requires separate handling or specific collation, but usually defaults to insensitive in simple setups or sensitive. Prisma standard compliant.
+      { description: { contains: search } },
+    ];
+  }
+
+  if (category && category !== "all") {
+    // If filtering by name, we need to find the category first or filter by relation
+    where.category = {
+      name: category,
+    };
+  }
+
+  // Build Sort Order
+  let orderBy: Prisma.ProductOrderByWithRelationInput = { createdAt: "desc" };
+  if (sort === "price-low") {
+    orderBy = { price: "asc" };
+  } else if (sort === "price-high") {
+    orderBy = { price: "desc" };
+  } else if (sort === "rating") {
+    orderBy = { ratingsAverage: "desc" };
+  }
+
+  // Fetch Data Transactions
+  try {
+    const [products, total, categories] = await Promise.all([
+      prisma.product.findMany({
+        where,
+        include: {
+          brand: true,
+          category: true,
+        },
+        orderBy,
+        take: limit,
+        skip: (page - 1) * limit,
+      }),
+      prisma.product.count({ where }),
+      prisma.category.findMany({ select: { id: true, name: true } }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    // Serialize for client component
+    const serializedProducts = JSON.parse(JSON.stringify(products));
+
+    return (
+      <div className="min-h-screen bg-black text-white pt-24 pb-12">
+        <ProductGridClient
+          products={serializedProducts}
+          categories={categories}
+          pagination={{
+            page,
+            limit,
+            total,
+            totalPages,
+          }}
+        />
+      </div>
+    );
+  } catch (error) {
+    console.error("Failed to load products page:", error);
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-500 mb-2">
+            Error Loading Products
+          </h2>
+          <p className="text-gray-400">Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
+}

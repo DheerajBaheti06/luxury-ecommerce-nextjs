@@ -1,30 +1,5 @@
-// --- Prisma Schema Cheat Sheet ---
-//
-// ?         = Optional field (can be null).
-// []        = A list of values (e.g., String[] is a list of strings).
-// @id        = Primary Key (the main unique ID for a model).
-// @default() = Sets a default value (e.g., cuid(), now(), false).
-// @unique    = Enforces that the value in this field must be unique.
-// @relation  = Defines the link between two models.
-// @updatedAt = Automatically updates this timestamp on any change.
-// onDelete  = Rule for what happens when a parent is deleted (e.g., Cascade).
-//
-// @@unique  = Composite unique: The *combination* of fields must be unique.
-// @@index   = Database index: Makes queries on these fields much faster.
-//
-// type      = A composite type: A structured object (like Address) that is
-//             embedded in a model, not a separate table.
-// enum      = A set of specific allowed values (like PENDING or PAID).
-//
-// ---------------------------------
-
-
-
-
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -32,12 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// models ----------------------------->>>>>>>
 model User {
   id                  String    @id @default(cuid())
   username            String    @unique
   email               String    @unique
-  password            String // Hashing and comparison happens in your code
+  password            String
   avatar              String?
   isAdmin             Boolean   @default(false)
   phone               String?
@@ -46,179 +20,163 @@ model User {
   refreshToken        String?
   resetPasswordToken  String?
   resetPasswordExpire DateTime?
-
-  // Relations
-  addresses Address[] // 1:Many
-  orders Order[] // 1:Many
-  cart Cart? // 1:1
-  wishlist Wishlist? // 1:1
-  reviews Review[] // 1:Many
+  addresses           Address[]
+  cart                Cart?
+  orders              Order[]
+  reviews             Review[]
+  wishlist            Wishlist?
 }
 
-// Change 'type' to 'model'
 model Address {
-  id        String  @id @default(cuid()) // Add a unique ID field
-  street    String
-  city      String
-  state     String
-  pinCode   String
-  country   String
-  // Add relation fields
-  userId    String
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  street  String
+  city    String
+  state   String
+  pinCode String
+  country String
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Add index for faster lookups by user
   @@index([userId])
 }
 
 model Category {
-  id              String     @id @default(cuid())
-  name            String     @unique
-  description     String?
+  id               String     @id @default(cuid())
+  name             String     @unique
+  description      String?
   parentCategoryId String?
-  parentCategory  Category?  @relation("SubCategories", fields: [parentCategoryId], references: [id])
-  subCategories   Category[] @relation("SubCategories")
-
-  // Relations
-  products Product[]  // 1:Many
+  parentCategory   Category?  @relation("SubCategories", fields: [parentCategoryId], references: [id])
+  subCategories    Category[] @relation("SubCategories")
+  products         Product[]
 }
 
 model Brand {
-  id String @id @default(cuid())
-  name String @unique
-  logo String?
+  id       String    @id @default(cuid())
+  name     String    @unique
+  logo     String?
   products Product[]
 }
 
 model Product {
-  id             String    @id @default(cuid())
+  id             String         @id @default(cuid())
   title          String
   description    String
-  price          Decimal   @db.Decimal(10, 2)
-  discountPrice  Decimal?  @db.Decimal(10, 2)
+  price          Decimal        @db.Decimal(10, 2)
+  discountPrice  Decimal?       @db.Decimal(10, 2)
   images         String[]
-  brand          Brand?  @relation(fields: [brandId], references: [id])
   brandId        String?
-  ratingsAverage Float     @default(0)
-  ratingsCount   Int       @default(0)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  ratingsAverage Float          @default(0)
+  ratingsCount   Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
   categoryId     String
-  category       Category  @relation(fields: [categoryId], references: [id])
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  brand          Brand?         @relation(fields: [brandId], references: [id])
+  category       Category       @relation(fields: [categoryId], references: [id])
+  reviews        Review[]
+  variants       Variant[]
+  wishlistItems  WishlistItem[]
 
-  // Relations
-  variants      Variant[]
-  cartItems     CartItem[]
-  wishlistItems WishlistItem[]
-  orderItems    OrderItem[]
-  reviews       Review[]
-
-  // Indexes
   @@index([brandId, price])
   @@index([categoryId, price])
 }
 
 model Variant {
-  id String @id @default(cuid()) 
-  color String
-  size String
-  stock Int
-  price Decimal @db.Decimal(10, 2)
-  image String?
+  id        String  @id @default(cuid())
+  color     String
+  size      String
+  stock     Int
+  price     Decimal @db.Decimal(10, 2)
+  image     String?
   productId String
-  products Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  products  Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([productId, color, size])
 }
 
 model Review {
-  id String @id @default(cuid())
-  rating Float @default(0)
-  images String[]
-  comment String?
-  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  rating    Float    @default(0)
+  images    String[]
+  comment   String?
   productId String
-  user User @relation(fields:[userId], references: [id], onDelete: Cascade)
-  userId String
+  userId    String
   createdAt DateTime @default(now())
-
-  @@index([productId])
-  @@index([userId])
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([productId, userId])
+  @@index([productId])
+  @@index([userId])
 }
 
 model Cart {
-  id String @id @default(cuid())
-  user User @relation(fields: [userId] , references: [id], onDelete: Cascade)
-  userId String @unique
-  items CartItem[]
+  id     String     @id @default(cuid())
+  userId String     @unique
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  CartItem[]
 }
 
 model CartItem {
-  id String @id @default(cuid())
-  quantity Int @default(1)
-  price Decimal @db.Decimal(10, 2)
-  cart Cart @relation(fields: [cartId], references:[id], onDelete: Cascade)
-  cartId String
-  product Product @relation(fields: [productId], references: [id])
+  id        String   @id @default(cuid())
+  quantity  Int      @default(1)
+  price     Decimal  @db.Decimal(10, 2)
+  cartId    String
   productId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@unique([cartId, productId])
 }
 
 model Wishlist {
-  id String @id @default(cuid())
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @unique
-  items WishlistItem[]
+  id     String         @id @default(cuid())
+  userId String         @unique
+  user   User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items  WishlistItem[]
 }
 
 model WishlistItem {
-    id String @id @default(cuid())
-    image String?
-    color String
-    size String
-    wishlist Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
-    wishlistId String
-    product Product @relation(fields: [productId], references: [id])
-    productId String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+  id         String   @id @default(cuid())
+  image      String?
+  color      String
+  size       String
+  wishlistId String
+  productId  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
 
-    @@unique([wishlistId, productId])
+  @@unique([wishlistId, productId])
 }
 
 model Order {
-  id String @id @default(cuid())
-  orderItems OrderItem[]
-  user User @relation(fields: [userId], references: [id])
-  userId String
-  totalPrice Decimal @db.Decimal(10, 2)
-  paymentStatus PaymentStatus @default(PENDING)
+  id             String         @id @default(cuid())
+  userId         String
+  totalPrice     Decimal        @db.Decimal(10, 2)
+  paymentStatus  PaymentStatus  @default(PENDING)
   deliveryStatus DeliveryStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  user           User           @relation(fields: [userId], references: [id])
+  orderItems     OrderItem[]
 }
 
 model OrderItem {
-  id String @id @default(cuid())
-  price Decimal @db.Decimal(10, 2)
-  quantity Int @default(1)
-  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId String
-  product Product @relation(fields: [productId], references: [id])
+  id        String   @id @default(cuid())
+  price     Decimal  @db.Decimal(10, 2)
+  quantity  Int      @default(1)
+  orderId   String
   productId String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id])
 }
-
-
-
-// composite type ---------------------------->>>>>>>
-
 
 enum PaymentStatus {
   PENDING

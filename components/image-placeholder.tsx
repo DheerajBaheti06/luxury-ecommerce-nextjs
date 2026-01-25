@@ -25,7 +25,7 @@ const ImagePlaceholder = ({
         src={src}
         alt={alt}
         fill // The 'fill' prop makes the image fill this container.
-        className={cn("object-cover", imgClassName)}
+        className={cn("object-contain", imgClassName)}
         sizes={sizes}
         priority={priority}
       />
