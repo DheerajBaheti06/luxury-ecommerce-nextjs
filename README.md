@@ -1,25 +1,24 @@
-# Next.js Luxury E-Commerce Store
+# Next.js 15 Modern Luxury E-Commerce Platform
 
-A high-performance, premium e-commerce application built with Next.js 14, TypeScript, and Tailwind CSS. Designed to showcase modern web development practices including Server Side Rendering (SSR), advanced filtering, and a seamless responsive UI.
-
-![Project Preview](https://images.pexels.com/photos/1055691/pexels-photo-1055691.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1)
+A high-performance, premium e-commerce application built with **Next.js 15**, **React 19**, **TypeScript**, and **Tailwind CSS v4**. This project showcases modern web development practices including Server Components, streaming, optimistic UI updates, and a seamless "luxury" aesthetic.
 
 ## 🚀 Features
 
-- **High-Performance Architecture**: Utilizes Next.js Server Components for lightning-fast initial page loads and improved SEO.
-- **Advanced Product Filtering**: URL-based filtering, searching, and sorting (by price, rating, category) powered by Prisma ORM.
-- **Premium UI/UX**: Custom "Dark Mode" aesthetic with glassmorphism effects, smooth transitions, and shimmer loading states.
-- **Database Integrated**: Real-time data fetching using Prisma with a robust seed script for generating curated luxury demos.
-- **Interactive Cart & Wishlist**: Context-based state management for shopping features.
+- **High-Performance Architecture**: Architected using **Next.js 15 App Router** and **React Server Components** for near-instant Time to First Byte (TTFB).
+- **Advanced Product Filtering**: Efficient queries for real-time product filtering, searching, and sorting (by price, rating, category) powered by **Prisma ORM**.
+- **Premium UI/UX**: Custom "Dark Mode" aesthetic with glassmorphism effects, smooth transitions using **Framer Motion**, and shimmer loading states.
+- **Database Integrated**: Scalable schema with complex relationships (Categories, Brands, Variants) and a robust seed script for generating realistic demo data.
+- **Interactive State**: Context-based state management for Cart and Wishlist customization.
 - **Responsive Design**: Fully optimized mobile, tablet, and desktop views.
 
 ## 🛠 Tech Stack
 
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 15 (App Router)
 - **Language**: TypeScript
-- **Styling**: Tailwind CSS, Lucide React (Icons)
-- **Database/ORM**: Prisma, SQLite (easy to swap for PostgreSQL)
-- **UI Components**: Custom components with Radix UI primitives
+- **Styling**: Tailwind CSS v4, Lucide React (Icons), Framer Motion
+- **Database/ORM**: Prisma, PostgreSQL (via Neon)
+- **UI Components**: Radix UI primitives, Sonner (Toasts)
+- **Forms**: React Hook Form, Zod
 
 ## ⚡ Getting Started
 
@@ -42,7 +41,7 @@ A high-performance, premium e-commerce application built with Next.js 14, TypeSc
     npx prisma generate
     npx prisma db push
     # Seed with luxury demo data
-    npx tsx prisma/seed.ts
+    npx prisma db seed
     ```
 
 4.  **Run Development Server**
