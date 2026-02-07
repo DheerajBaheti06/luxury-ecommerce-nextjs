@@ -1,39 +1,18 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// ✨ Content updated for a modern e-commerce feel
 interface FeaturesContent {
   title: string;
   subtitle: string;
 }
-
-const defaultContent: FeaturesContent = {
+const content: FeaturesContent = {
   title: "Why You'll Love Shopping With Us",
   subtitle:
     "Experience the perfect blend of quality, style, and service you can count on.",
 };
 
 export function Features() {
-  const [content, setContent] = useState<FeaturesContent>(defaultContent);
-
-  useEffect(() => {
-    // This functionality is preserved as requested
-    const savedContent = localStorage.getItem("skitbit-content");
-    if (savedContent) {
-      try {
-        const parsed = JSON.parse(savedContent);
-        if (parsed.features) {
-          setContent(parsed.features);
-        }
-      } catch (error) {
-        console.error("Error parsing saved content:", error);
-      }
-    }
-  }, []);
 
   return (
     <section id="features" className="container mx-auto px-4 py-16 sm:py-20">
@@ -47,7 +26,7 @@ export function Features() {
       </div>
 
       <div className="mt-12 grid gap-6 md:grid-cols-2">
-        {/* Card 1: Curated Collections */}
+        {/* Card 1: Expertly Curated */}
         <Card className="hidden md:block liquid-glass border border-white/10 bg-white/5 backdrop-blur-xl">
           <CardHeader>
             <p className="text-[11px] tracking-widest text-neutral-400">

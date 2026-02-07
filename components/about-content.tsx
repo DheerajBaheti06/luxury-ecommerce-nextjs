@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Users, Target, Zap, Calendar, User } from "lucide-react";
+import { ArrowRight, Users, Target, Zap, CheckCircle2, User, Award } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { useAuth } from "@/context/auth-context";
 
@@ -44,28 +44,31 @@ export function AboutContent({
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Hero Section */}
-      <section className="relative py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-lime-400/5 via-transparent to-lime-400/5 rounded-3xl"></div>
-        <div className="max-w-7xl mx-auto text-center">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6">
-            About <span className="text-lime-400">Skitbit</span>
+    <div className="min-h-screen text-white pb-20">
+      {/* Hero Section: Matched to Hero.tsx spacing and typography */}
+      <section className="relative py-20 sm:py-32 px-4 text-center overflow-hidden">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+            <span className="block">The Vision Behind</span>
+            <span className="block text-lime-400 drop-shadow-[0_0_20px_rgba(132,204,22,0.4)]">
+              Skitbit Studio
+            </span>
           </h1>
-          <p className="text-gray-400 max-w-2xl mx-auto text-base sm:text-lg mb-10">
-            We are on a mission to revolutionize the e-commerce landscape.
+          <p className="mt-6 max-w-2xl mx-auto text-base text-gray-200 sm:text-lg md:text-xl leading-relaxed">
+            We are on a mission to revolutionize the digital landscape. By blending high-fidelity 3D visual services with curated luxury assets, we help you find the pieces that are uniquely you.
           </p>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-12">
+          {/* Stats Cards: Glassmorphism style */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 max-w-5xl mx-auto mt-16">
             {stats.map((stat, index) => (
               <div
                 key={index}
-                className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-xl p-4 sm:p-6"
+                className="bg-black/40 backdrop-blur-md border border-gray-800 rounded-2xl p-6 shadow-2xl transition-transform hover:scale-105"
               >
-                <div className="text-2xl sm:text-3xl font-bold text-lime-400 mb-1">
+                <div className="text-3xl sm:text-4xl font-bold text-lime-400 mb-1">
                   {stat.value}
                 </div>
-                <div className="text-xs sm:text-sm text-gray-400">
+                <div className="text-[10px] sm:text-xs text-gray-400 uppercase tracking-[0.2em] font-bold">
                   {stat.label}
                 </div>
               </div>
@@ -74,163 +77,149 @@ export function AboutContent({
         </div>
       </section>
 
-      {/* Story and Mission Section */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 lg:px-8">
+      {/* Tabs Section: Custom navigation using your button theme */}
+      <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="flex flex-wrap justify-center gap-2 mb-10">
-            <Button
-              variant={activeTab === "story" ? "default" : "outline"}
-              onClick={() => setActiveTab("story")}
-              className={
-                activeTab === "story"
-                  ? "bg-lime-400 text-black hover:bg-lime-300"
-                  : " text-black border-gray-700 hover:bg-gray-800 hover:text-white hover:border-white"
-              }
-            >
-              Our Story
-            </Button>
-            <Button
-              variant={activeTab === "mission" ? "default" : "outline"}
-              onClick={() => setActiveTab("mission")}
-              className={
-                activeTab === "mission"
-                  ? "bg-lime-400 text-black hover:bg-lime-300"
-                  : "border-gray-700 text-black hover:bg-gray-800 hover:text-white hover:border-white"
-              }
-            >
-              Mission & Vision
-            </Button>
-            <Button
-              variant={activeTab === "values" ? "default" : "outline"}
-              onClick={() => setActiveTab("values")}
-              className={
-                activeTab === "values"
-                  ? "bg-lime-400 text-black hover:bg-lime-300"
-                  : "border-gray-700 text-black hover:bg-gray-800 hover:text-white hover:border-white"
-              }
-            >
-              Core Values
-            </Button>
+          <div className="flex flex-wrap justify-center gap-3 mb-12">
+            {["story", "mission", "values"].map((tab) => (
+              <Button
+                key={tab}
+                variant="outline"
+                onClick={() => setActiveTab(tab)}
+                className={`rounded-full px-10 py-6 font-bold uppercase tracking-widest transition-all border-gray-700 ${
+                  activeTab === tab
+                    ? "bg-lime-400 text-black border-lime-400 shadow-[0_0_20px_rgba(163,230,53,0.3)]"
+                    : "bg-transparent text-white hover:bg-white hover:text-black"
+                }`}
+              >
+                Our {tab}
+              </Button>
+            ))}
           </div>
 
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-6 sm:p-8 mb-16">
+          {/* Tab Content Box */}
+          <div className="bg-black/50 backdrop-blur-xl border border-gray-800 rounded-[2.5rem] p-8 md:p-16 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-lime-400/5 blur-[100px] -z-10" />
+            
             {activeTab === "story" && (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                    Our Journey
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center text-left">
+                <div className="space-y-6">
+                  <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                    The Journey <span className="text-lime-400 italic">to Quality</span>
                   </h2>
-                  <p className="text-gray-300 mb-4">
-                    Founded in 2017, Skitbit began as a small team of passionate
-                    technologists.
+                  <p className="text-gray-300 text-lg leading-relaxed">
+                    Founded in 2017, Skitbit began as a small team of passionate technologists who believed that e-commerce was ready for its next evolution.
                   </p>
-                  <p className="text-gray-300 mb-4">
-                    Over the years, we have consistently pushed the boundaries
-                    of innovation.
+                  <p className="text-gray-400 leading-relaxed">
+                    Over the years, we have consistently pushed the boundaries of innovation. From precision 3D modeling for luxury horology to creating immersive digital boutiques, our journey is defined by a commitment to style and value delivered to your door.
                   </p>
                 </div>
-                {/* Timeline simplified for brevity in this file update */}
-                <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-6 border border-gray-700">
-                  <p className="text-gray-300">Timeline placeholder...</p>
+                <div className="bg-gradient-to-br from-gray-900 to-black rounded-3xl p-8 border border-gray-800 shadow-inner">
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="h-12 w-12 rounded-full bg-lime-400/10 flex items-center justify-center">
+                      <Award className="text-lime-400 h-6 w-6" />
+                    </div>
+                    <span className="font-bold text-xl uppercase tracking-tighter">Milestones</span>
+                  </div>
+                  <ul className="space-y-4">
+                    {["2017: Concept & Launch", "2020: Global Client Expansion", "2024: Next-Gen Marketplace"].map((m) => (
+                      <li key={m} className="flex items-center gap-3 text-gray-400 text-sm">
+                        <CheckCircle2 className="h-4 w-4 text-lime-400" /> {m}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
               </div>
             )}
+
             {activeTab === "mission" && (
-              <div className="p-4 text-center">
-                <h3 className="text-xl font-bold mb-4 text-lime-400">
-                  Our Mission
+              <div className="text-center max-w-3xl mx-auto space-y-8">
+                <h3 className="text-3xl sm:text-4xl font-extrabold text-lime-400 uppercase tracking-tighter italic">
+                  Mission & Vision
                 </h3>
-                <p className="text-gray-300">
-                  To empower businesses and consumers.
+                <p className="text-2xl sm:text-3xl text-gray-100 font-light leading-snug">
+                  "To unleash global style through a curated selection of the latest trends, high-end 3D visual excellence, and a relentless focus on customer success."
                 </p>
+                <div className="pt-8 border-t border-gray-800">
+                   <p className="text-gray-500 uppercase tracking-widest text-sm font-bold">Built for the future of digital retail</p>
+                </div>
               </div>
             )}
+
             {activeTab === "values" && (
-              <div className="p-4 text-center">
-                <h3 className="text-xl font-bold mb-4 text-lime-400">
-                  Our Values
-                </h3>
-                <p className="text-gray-300">
-                  Innovation, Teamwork, Customer Focus.
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                {values.map((v, i) => (
+                  <div key={i} className="flex flex-col items-center p-10 bg-white/5 rounded-3xl border border-white/5 transition-all hover:border-lime-400/30 group">
+                    <div className="mb-6 group-hover:scale-110 transition-transform">{v.icon}</div>
+                    <h4 className="text-xl font-bold uppercase tracking-widest mb-3">{v.title}</h4>
+                    <p className="text-sm text-gray-400 leading-relaxed text-center">{v.description}</p>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         </div>
       </section>
 
-      {/* Featured Products */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
+      {/* Featured Products Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-              Popular <span className="text-lime-400">Products</span>
-            </h2>
-            <p className="text-gray-400 max-w-2xl mx-auto">
-              Discover our best-selling items that customers love
-            </p>
+          <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-6 text-center md:text-left">
+            <div>
+              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight uppercase">
+                Explore the <span className="text-lime-400 italic">Collection</span>
+              </h2>
+              <p className="text-gray-400 mt-2">Discover pieces that are uniquely you.</p>
+            </div>
+            <Button
+              asChild
+              size="lg"
+              className="rounded-full bg-white text-black font-bold text-lg px-10 py-6 transition-all hover:bg-lime-400 hover:scale-105 hover:shadow-lg hover:shadow-lime-400/20"
+            >
+              <Link href="/products" className="flex items-center gap-2">
+                SHOP NOW <ArrowRight className="h-5 w-5" />
+              </Link>
+            </Button>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
             {featuredProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 id={product.id}
                 name={product.title || product.name}
                 description={product.description}
-                price={
-                  product.discountPrice
-                    ? product.discountPrice.toString()
-                    : product.price.toString()
-                }
-                originalPrice={
-                  product.discountPrice ? product.price.toString() : undefined
-                }
+                price={product.price.toString()}
                 rating={product.ratingsAverage}
                 image={product.images?.[0] || product.image}
-                featured={product.ratingsAverage > 4.8}
-                showWishlistButton={true}
-                showAddToCartButton={true}
-                showViewButton={true}
                 productDetails={product}
               />
             ))}
           </div>
-
-          <div className="text-center mt-10">
-            <Button
-              asChild
-              className="bg-green-500 text-black hover:bg-lime-300"
-            >
-              <Link href="/products">
-                View All Products
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
         </div>
       </section>
 
-      {/* Authentication CTA Section */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-2xl p-8 sm:p-12">
-          <User className="h-12 w-12 text-lime-400 mx-auto mb-6" />
-          <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-            {isAuthenticated
-              ? "Welcome Back to Skitbit!"
-              : "Join Our Community"}
-          </h2>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            {/* CTA Buttons */}
-            <Button
-              asChild
-              className="bg-lime-400 text-black hover:bg-lime-300"
-            >
-              <Link href={isAuthenticated ? "/auth/profile" : "/auth/signup"}>
-                {isAuthenticated ? "View Profile" : "Create Account"}
-              </Link>
-            </Button>
+      {/* Auth CTA Section */}
+      <section className="py-16 px-4">
+        <div className="max-w-4xl mx-auto text-center bg-gradient-to-br from-gray-900 to-black border border-gray-800 rounded-[3rem] p-12 shadow-2xl">
+          <div className="bg-lime-400/10 p-5 rounded-full w-fit mx-auto mb-8 shadow-[0_0_30px_rgba(163,230,53,0.1)]">
+            <User className="h-10 w-10 text-lime-400" />
           </div>
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-6 tracking-tight">
+            {isAuthenticated ? "Welcome Back to Skitbit!" : "Unleash Your Personal Style"}
+          </h2>
+          <p className="text-gray-400 mb-10 max-w-md mx-auto text-lg leading-relaxed">
+            Join our community to access exclusive collections and premium 3D visualization services.
+          </p>
+          <Button
+            asChild
+            size="lg"
+            className="rounded-full bg-lime-400 text-black font-bold text-lg px-12 py-6 transition-all hover:bg-white hover:scale-105 shadow-xl shadow-lime-400/20"
+          >
+            <Link href={isAuthenticated ? "/auth/profile" : "/auth/signup"}>
+              {isAuthenticated ? "GO TO PROFILE" : "CREATE ACCOUNT"}
+            </Link>
+          </Button>
         </div>
       </section>
     </div>

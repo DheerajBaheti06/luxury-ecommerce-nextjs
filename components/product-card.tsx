@@ -283,7 +283,7 @@ export function ProductCard({
             }}
             onClose={handleCloseModal}
           />,
-          document.body
+          document.body,
         )}
     </>
   );

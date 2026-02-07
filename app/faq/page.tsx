@@ -3,115 +3,66 @@
 import { useState } from "react";
 import { SiteLayout } from "@/components/site-layout";
 import { AppverseFooter } from "@/components/appverse-footer";
-import { motion, AnimatePresence, Variants } from "framer-motion";
-import { Plus } from "lucide-react";
-import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import { Plus, Loader2, Check, ShieldCheck } from "lucide-react";
 
-// --- FAQ Data ---
-// Storing data in an array makes the page much easier to update.
 const faqs = [
   {
     question: "What types of products can you animate or render?",
-    answer:
-      "We can create photorealistic 3D animations and renders for almost any product — from beauty and skincare to electronics, furniture, and luxury goods. If it exists (or is planned), we can bring it to life.",
+    answer: "We specialize in photorealistic 3D for consumer electronics, luxury packaging, beauty products, and industrial design. If you have a physical product or a 2D sketch, we can digitize and animate it.",
   },
   {
     question: "How long does a typical 3D animation take?",
-    answer:
-      "Timelines vary depending on complexity, but a standard 15–20 second animation usually takes 7–14 working days after final concept approval.",
+    answer: "Bespoke campaigns typically require 10–20 business days. This ensures every texture and lighting bounce meets our premium quality standards.",
   },
   {
     question: "Do you work with existing CAD files or product samples?",
-    answer:
-      "We can work with both. If you have CAD or 3D models, we can import and refine them. If not, we can create models from physical product samples or detailed reference images.",
+    answer: "We prefer industry-standard files like .STP, .STEP, or .OBJ. If you don't have these, we can build a 3D model from scratch using physical samples or high-resolution photo references.",
   },
   {
-    question: "How do you price your services?",
-    answer: (
-      <>
-        Pricing is based on animation length, complexity, number of renders, and
-        modeling requirements. You can view detailed pricing on our{" "}
-        <Link
-          href="/pricing"
-          className="text-lime-300 underline transition hover:text-lime-200"
-        >
-          pricing page
-        </Link>
-        .
-      </>
-    ),
-  },
-  {
-    question: "Can we request changes after delivery?",
-    answer: (
-      <>
-        Yes. All revisions are covered under our{" "}
-        <Link
-          href="/revisions"
-          className="text-lime-300 underline transition hover:text-lime-200"
-        >
-          revision policy
-        </Link>
-        , which ensures smooth updates without unexpected scope creep.
-      </>
-    ),
-  },
-  {
-    question: "Will the renders match our brand's visual style?",
-    answer:
-      "Absolutely. We customize lighting, materials, camera angles, and animation pacing to fit your brand's identity and marketing needs.",
+    question: "Who owns the final 3D assets and renders?",
+    answer: "Upon final payment, you own full commercial rights to the rendered images and videos. Source files (working files) remain the property of the studio unless a transfer is negotiated beforehand.",
   },
   {
     question: "What formats do you deliver in?",
-    answer:
-      "We typically deliver in MP4 (H.264) for videos and high-resolution PNG/JPG for stills. Other formats like MOV, ProRes, or transparent-background renders are available on request.",
+    answer: "Standard delivery includes 4K MP4 (H.265) for video and high-resolution PNGs for stills. We also provide files optimized for web-store integration like glTF, GLB, or USDZ for AR.",
   },
   {
-    question: "Can you handle large-scale projects or bulk renders?",
-    answer:
-      "Yes, we regularly work on bulk orders for 10+ animations or 50+ renders. We optimize workflows to maintain quality and meet tight deadlines.",
+    question: "Can we request changes after the initial delivery?",
+    answer: "Every project includes two rounds of revisions. Minor adjustments to lighting, camera speed, or colors are standard. Major structural changes to the model may incur an additional fee.",
   },
   {
-    question: "Do you offer creative direction or only technical execution?",
-    answer:
-      "We do both. Our team can develop creative concepts, storyboards, and camera moves, or simply execute your pre-approved vision.",
+    question: "Do you offer creative direction or just technical execution?",
+    answer: "We do both. We can develop creative concepts, storyboards, and camera movements, or simply execute your pre-approved vision with technical precision.",
+  },
+  {
+    question: "Is your 3D content compatible with Apple Vision Pro?",
+    answer: "Yes. We can output USDZ files specifically optimized for visionOS, allowing users to interact with your products in high-fidelity spatial environments.",
+  },
+  {
+    question: "How do you handle bulk orders for large e-commerce catalogs?",
+    answer: "We offer specialized 'Catalog Workflows' for brands needing 50+ consistent renders. We automate lighting and material application to ensure brand consistency across your entire store.",
+  },
+  {
+    question: "What is your pricing structure?",
+    answer: "Our pricing is project-based, calculated by complexity and asset volume. We offer tiered packages for startups as well as bespoke enterprise solutions for global campaigns.",
+  },
+  {
+    question: "Can you simulate liquid, cloth, or organic materials?",
+    answer: "Absolutely. We use advanced physics simulations to recreate photorealistic liquid flows, fabric movements, and skin textures for beauty and fashion brands.",
   },
   {
     question: "How do we get started?",
-    answer: (
-      <>
-        Simply{" "}
-        <Link
-          href="/contact"
-          className="text-lime-300 underline transition hover:text-lime-200"
-        >
-          contact us
-        </Link>{" "}
-        with your project details, references, and timeline. We'll provide a
-        proposal and next steps.
-      </>
-    ),
+    answer: "The process begins with a brief consultation. Simply use the Concierge form on the left or visit our contact page to share your project details.",
   },
 ];
 
-// --- Reusable, Animated Accordion Item Component ---
-function FaqItem({
-  question,
-  answer,
-  isOpen,
-  onToggle,
-}: {
-  question: string;
-  answer: React.ReactNode;
-  isOpen: boolean;
-  onToggle: () => void;
-}) {
+function FaqItem({ question, answer, isOpen, onToggle }: any) {
   return (
     <div className="border-b border-white/10">
       <button
         onClick={onToggle}
-        className="group flex w-full items-center justify-between py-3 text-left"
-        aria-expanded={isOpen}
+        className="group flex w-full items-center justify-between py-6 text-left"
       >
         <span className="text-lg font-medium text-white transition-colors duration-300 group-hover:text-lime-300 sm:text-xl">
           {question}
@@ -129,11 +80,9 @@ function FaqItem({
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            key="answer"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
             className="overflow-hidden"
           >
             <p className="pb-6 text-base text-neutral-300">{answer}</p>
@@ -144,55 +93,139 @@ function FaqItem({
   );
 }
 
-// --- Main Page Component ---
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [status, setStatus] = useState<"idle" | "sending" | "verifying" | "sent">("idle");
+  const [formData, setFormData] = useState({ name: "", message: "" });
 
-  // Animation variants for Framer Motion
-  const containerVariants: Variants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
+  const handleFakeSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name || !formData.message) return;
 
-  const itemVariants: Variants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1 },
+    setStatus("sending");
+    
+    // Stage 1: Initial Send
+    setTimeout(() => setStatus("verifying"), 1200);
+    
+    // Stage 2: Security/Encryption Simulation
+    setTimeout(() => {
+      setStatus("sent");
+      setFormData({ name: "", message: "" });
+    }, 2800);
+
+    // Stage 3: Reset to idle
+    setTimeout(() => setStatus("idle"), 6000);
   };
 
   return (
     <SiteLayout>
-      <section className="overflow-hidden text-white sm:py-24">
-        <div className="container mx-auto max-w-4xl px-4 text-center">
-          
-            <h1 className="text-4xl font-bold tracking-tight text-lime-300 sm:text-5xl">
-              Frequently Asked Questions
-            </h1>
-            <p className="mt-4 text-lg text-neutral-400">
-              Your questions, answered. Find details about our 3D services
-              below.
-            </p>
+      <div className="min-h-screen text-white pb-24">
+        <main className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-20">
+            
+            {/* Left Column: Authentic Form */}
+            <div className="lg:col-span-4 lg:sticky lg:top-32 h-fit space-y-10">
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight text-lime-300 sm:text-5xl">
+                  Frequently Asked Questions
+                </h1>
+                <p className="mt-4 text-lg text-neutral-400">
+                  Refined answers for our luxury partners and collaborators.
+                </p>
+              </div>
 
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="relative mt-12 rounded-2xl border border-white/10  p-4 shadow-2xl shadow-black/20 backdrop-blur-lg sm:p-8"
-          >
-            {faqs.map((faq, index) => (
-              <motion.div key={index} variants={itemVariants}>
-                <FaqItem
-                  question={faq.question}
-                  answer={faq.answer}
-                  isOpen={openIndex === index}
-                  onToggle={() =>
-                    setOpenIndex(openIndex === index ? null : index)
-                  }
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
+              {/* The "Original" Looking Concierge Card */}
+              <div className="bg-white rounded-[2.5rem] p-8 text-black shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="text-xl font-black uppercase tracking-tight leading-none">Concierge</h3>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-pulse" />
+                    <div className="w-1.5 h-1.5 rounded-full bg-lime-500 animate-pulse delay-75" />
+                  </div>
+                </div>
+                
+                <form onSubmit={handleFakeSend} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Identity</label>
+                    <input 
+                      required
+                      value={formData.name}
+                      onChange={(e) => setFormData({...formData, name: e.target.value})}
+                      placeholder="Name or Brand" 
+                      className="w-full bg-gray-100 border-2 border-transparent focus:border-lime-400 focus:bg-white outline-none rounded-2xl p-4 text-xs transition-all placeholder:text-gray-400 text-black font-bold" 
+                    />
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-black uppercase text-gray-400 ml-1">Inquiry</label>
+                    <textarea 
+                      required
+                      value={formData.message}
+                      onChange={(e) => setFormData({...formData, message: e.target.value})}
+                      placeholder="How may we assist?" 
+                      className="w-full bg-gray-100 border-2 border-transparent focus:border-lime-400 focus:bg-white outline-none rounded-2xl p-4 text-xs h-28 transition-all placeholder:text-gray-400 text-black font-bold resize-none" 
+                    />
+                  </div>
+
+                  <button 
+                    type="submit"
+                    disabled={status !== "idle"}
+                    className={`group w-full py-5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-xl ${
+                      status === "sent" ? "bg-lime-400 text-black" : "bg-black text-white hover:bg-lime-400 hover:text-black"
+                    }`}
+                  >
+                    {status === "idle" && (
+                      <>
+                        Confirm Inquiry
+                        <motion.span animate={{ x: [0, 5, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+                          →
+                        </motion.span>
+                      </>
+                    )}
+                    {status === "sending" && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {status === "verifying" && (
+                      <>
+                        <ShieldCheck className="h-4 w-4 animate-pulse" /> Verifying...
+                      </>
+                    )}
+                    {status === "sent" && (
+                      <>
+                        <Check className="h-4 w-4" /> Inquiry Received
+                      </>
+                    )}
+                  </button>
+                </form>
+                
+                {status === "sent" && (
+                  <motion.p 
+                    initial={{ opacity: 0, y: 10 }} 
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-center text-[9px] font-bold text-lime-600 mt-4 uppercase tracking-widest"
+                  >
+                    A representative will reach out shortly.
+                  </motion.p>
+                )}
+              </div>
+            </div>
+
+            {/* Right Column: Original FAQ List Pattern */}
+            <div className="lg:col-span-8 bg-white/[0.03] border border-white/5 rounded-[2.5rem] p-6 sm:p-10 backdrop-blur-xl">
+              <div className="space-y-2">
+                {faqs.map((faq, index) => (
+                  <FaqItem
+                    key={index}
+                    question={faq.question}
+                    answer={faq.answer}
+                    isOpen={openIndex === index}
+                    onToggle={() => setOpenIndex(openIndex === index ? null : index)}
+                  />
+                ))}
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
       <AppverseFooter />
     </SiteLayout>
   );

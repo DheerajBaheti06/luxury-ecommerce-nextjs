@@ -1,188 +1,133 @@
-// app/blog/[id]/page.tsx
 "use client";
 
-import React from "react";
+import React, { use } from "react"; // Added use
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, User, Share2 } from "lucide-react";
+import { ArrowLeft, Calendar, User, Share2, Clock, ArrowRight } from "lucide-react";
 
-// Sample blog post data (in a real app, this would come from a CMS or database)
+// Sample blog post data
 const getBlogPost = (id: string) => {
   const posts: any = {
     "1": {
       id: "1",
       title: "The Future of 3D Product Visualization in E-commerce",
       content: `
-        <p>In the rapidly evolving world of e-commerce, 3D product visualization is emerging as a game-changing technology that's transforming how consumers interact with products online. As we look toward the future, it's clear that 3D animations and interactive models will become the new standard for online shopping experiences.</p>
-        
-        <h2 className="text-2xl font-bold my-6">Why 3D Visualization Matters</h2>
-        
-        <p>Traditional static images and even videos have limitations when it comes to showcasing products. Customers can't rotate, zoom, or interact with the product in a way that mimics the in-store experience. 3D visualization bridges this gap by providing an immersive, interactive experience that allows customers to examine products from every angle.</p>
-        
-        <p>This technology is particularly valuable for complex products where details matter. Electronics, fashion items, furniture, and automotive parts all benefit significantly from 3D visualization, as customers can inspect features, materials, and construction details before making a purchase.</p>
-        
-        <h2 className="text-2xl font-bold my-6">Impact on Conversion Rates</h2>
-        
-        <p>Studies consistently show that e-commerce sites implementing 3D product visualization see significant improvements in conversion rates. Some retailers report increases of 30-40% in conversions, along with reduced return rates as customers have a clearer understanding of what they're purchasing.</p>
-        
-        <p>The technology also reduces the burden on customer service teams, as fewer customers need to ask questions about product details that are clearly demonstrated through 3D models.</p>
-        
-        <h2 className="text-2xl font-bold my-6">Technological Advancements</h2>
-        
-        <p>Recent advancements in web technologies, including WebGL and real-time rendering engines, have made it possible to deliver high-quality 3D experiences directly in web browsers without requiring additional plugins. This accessibility is crucial for widespread adoption.</p>
-        
-        <p>Artificial intelligence is also playing a role, with automated 3D model generation from photographs becoming increasingly sophisticated. This reduces the time and cost associated with creating 3D content at scale.</p>
-        
-        <h2 className="text-2xl font-bold my-6">Looking Ahead</h2>
-        
-        <p>As augmented reality (AR) becomes more mainstream, we can expect 3D product visualization to integrate seamlessly with AR experiences, allowing customers to visualize products in their own spaces. Virtual reality (VR) shopping environments will also benefit from high-quality 3D assets.</p>
-        
-        <p>The future of e-commerce will be increasingly visual and interactive, with 3D product visualization at its core. Brands that invest in this technology now will be well-positioned to lead their markets in the years to come.</p>
+        <p>In the rapidly evolving world of e-commerce, 3D product visualization is emerging as a game-changing technology that's transforming how consumers interact with products online.</p>
+        <h2 className="text-2xl font-extrabold text-lime-400 mb-4 mt-8 tracking-tight uppercase">The New Standard</h2>
+        <p>Traditional static images and even videos have limitations. 3D visualization bridges this gap by providing an immersive, interactive experience that allows customers to examine products from every angle.</p>
       `,
       date: "2023-10-15",
       author: "Alex Morgan",
       category: "Technology",
-      image:
-        "https://images.pexels.com/photos/3747489/pexels-photo-3747489.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      image: "https://images.pexels.com/photos/3747489/pexels-photo-3747489.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
       readTime: "5 min read",
     },
     "2": {
       id: "2",
       title: "5 Ways 3D Animation Boosts Product Engagement",
-      content: `
-        <p>3D animation has revolutionized the way brands showcase their products, creating immersive experiences that captivate audiences and drive engagement. Here are five key ways 3D animation can significantly boost your product engagement metrics.</p>
-        
-        <h2 className="text-2xl font-bold my-6">1. Interactive Product Exploration</h2>
-        
-        <p>Unlike static images, 3D animations allow customers to interact with products in real-time. They can rotate, zoom, and examine products from every angle, creating a hands-on experience that mimics physical interaction. This level of engagement keeps users on your site longer and provides them with the detailed information they need to make confident purchasing decisions.</p>
-        
-        <h2 className="text-2xl font-bold my-6">2. Enhanced Storytelling Capabilities</h2>
-        
-        <p>3D animation enables brands to tell compelling stories about their products. You can demonstrate how a product works, show it in various environments, or create scenarios that illustrate its benefits. This narrative approach creates emotional connections with customers that static images simply cannot achieve.</p>
-        
-        <h2 className="text-2xl font-bold my-6">3. Superior Visual Quality</h2>
-        
-        <p>Modern 3D rendering techniques can produce visuals that are virtually indistinguishable from photography, but with greater flexibility and control. You can showcase products in ideal lighting conditions, create impossible camera angles, and highlight specific features with precision that photography often struggles to match.</p>
-        
-        <h2 className="text-2xl font-bold my-6">4. Consistent Brand Experience</h2>
-        
-        <p>3D animation allows for complete control over every visual element, ensuring consistency across all marketing materials. Whether you're creating website content, social media posts, or advertising materials, 3D assets maintain the same high quality and brand alignment across all channels.</p>
-        
-        <h2 className="text-2xl font-bold my-6">5. Cost-Effective Scalability</h2>
-        
-        <p>Once a 3D model is created, it can be used across multiple platforms and repurposed for various marketing campaigns. This scalability makes 3D animation a cost-effective solution for brands that need to produce large volumes of product content across different channels and markets.</p>
-        
-        <p>By implementing 3D animation in your product marketing strategy, you can create more engaging, informative, and memorable experiences that drive customer satisfaction and business growth.</p>
-      `,
+      content: `<p>3D animation has revolutionized the way brands showcase their products...</p>`,
       date: "2023-09-22",
       author: "Sarah Johnson",
       category: "Marketing",
-      image:
-        "https://images.pexels.com/photos/3184461/pexels-photo-3184461.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
+      image: "https://images.pexels.com/photos/3184461/pexels-photo-3184461.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
       readTime: "4 min read",
     },
   };
-
-  return posts[id] || posts["1"]; // Default to post 1 if not found
+  return posts[id] || posts["1"];
 };
 
-export default function BlogPostPage({ params }: { params: { id: string } }) {
-  const post = getBlogPost(params.id);
+// Updated with React.use() to fix the Promise error
+export default function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const post = getBlogPost(resolvedParams.id);
 
-  // Get related posts (excluding the current one)
   const relatedPosts = Object.values(
-    getBlogPost("1").id !== post.id
-      ? { "1": getBlogPost("1") }
-      : { "2": getBlogPost("2") }
+    getBlogPost("1").id !== post.id ? { "1": getBlogPost("1") } : { "2": getBlogPost("2") }
   );
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      {/* Header */}
-      <header className="py-6 px-6 border-b border-gray-800">
-        <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen text-white pb-20">
+      {/* Back Navigation */}
+      <header className="py-10 px-6 sm:px-10 lg:px-20">
+        <div className="max-w-7xl mx-auto">
           <Button
             asChild
             variant="outline"
-            className="border-gray-700 text-gray-300 hover:bg-gray-800"
+            className="rounded-full border-gray-800 bg-white text-black hover:bg-lime-400 transition-all font-bold uppercase tracking-widest text-[10px] px-6 py-5"
           >
             <Link href="/blog">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 h-3 w-3" />
               Back to Blog
             </Link>
           </Button>
         </div>
       </header>
 
-      {/* Article Content */}
-      <article className="py-12 px-6">
-        <div className="max-w-4xl mx-auto">
-          {/* Category and Date */}
-          <div className="flex flex-wrap items-center gap-4 mb-6">
-            <span className="bg-lime-400/90 text-black text-sm font-bold px-3 py-1 rounded-full">
-              {post.category}
-            </span>
-            <div className="flex items-center text-gray-400">
-              <Calendar className="h-4 w-4 mr-2" />
-              <span>
-                {new Date(post.date).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </span>
-            </div>
-            <div className="flex items-center text-gray-400">
-              <User className="h-4 w-4 mr-2" />
-              <span>{post.author}</span>
-            </div>
-            <span className="text-gray-400">{post.readTime}</span>
-          </div>
-
-          {/* Title */}
-          <h1 className="text-3xl md:text-4xl font-bold mb-6">{post.title}</h1>
-
-          {/* Featured Image */}
-          <div className="relative h-96 rounded-2xl overflow-hidden mb-12">
-            <img
-              src={post.image}
-              alt={post.title}
-              className="w-full h-full object-cover"
-            />
-          </div>
-
-          {/* Content */}
-          <div
-            className="prose prose-invert max-w-none mb-12"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
-
-          {/* Share Section */}
-          <div className="border-t border-gray-800 pt-8">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">
-                  Share this article
-                </h3>
-                <p className="text-gray-400">
-                  Help others discover this content
-                </p>
+      <article className="px-4 sm:px-10 lg:px-20">
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            
+            {/* Left Column: Title and Content */}
+            <div className="lg:col-span-8">
+              <div className="flex items-center gap-4 mb-6">
+                <span className="bg-lime-400 text-black text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-[0_0_20px_rgba(163,230,53,0.3)]">
+                  {post.category}
+                </span>
+                <span className="text-gray-500 text-[10px] font-bold uppercase tracking-widest">{post.readTime}</span>
               </div>
-              <div className="flex gap-3">
-                <Button
-                  variant="outline"
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  Twitter
-                </Button>
-                <Button
-                  variant="outline"
-                  className="border-gray-700 text-gray-300 hover:bg-gray-800"
-                >
-                  <Share2 className="h-4 w-4 mr-2" />
-                  LinkedIn
-                </Button>
+
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight mb-10 leading-tight">
+                {post.title}
+              </h1>
+
+              <div className="relative aspect-video rounded-[2.5rem] overflow-hidden mb-12 border border-gray-800 shadow-2xl">
+                <img src={post.image} alt={post.title} className="w-full h-full object-cover" />
+              </div>
+
+              <div
+                className="prose prose-invert max-w-none mb-16 
+                prose-p:text-gray-400 prose-p:leading-relaxed prose-p:text-lg
+                prose-headings:font-extrabold prose-headings:tracking-tight prose-headings:text-white"
+                dangerouslySetInnerHTML={{ __html: post.content }}
+              />
+
+              {/* Share Box */}
+              <div className="bg-black/40 backdrop-blur-xl border border-gray-800 rounded-[2rem] p-8 flex flex-col sm:flex-row justify-between items-center gap-6">
+                <div>
+                  <h3 className="text-lg font-extrabold uppercase tracking-tight">Spread the word</h3>
+                  <p className="text-gray-500 text-sm">Share this insight with your network.</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button variant="outline" className="rounded-full bg-white text-black hover:bg-lime-400 border-none font-bold text-[10px] uppercase tracking-widest px-6">
+                    <Share2 className="h-3 w-3 mr-2" /> Twitter
+                  </Button>
+                  <Button variant="outline" className="rounded-full bg-white text-black hover:bg-lime-400 border-none font-bold text-[10px] uppercase tracking-widest px-6">
+                    <Share2 className="h-3 w-3 mr-2" /> LinkedIn
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Author & Meta */}
+            <div className="lg:col-span-4 space-y-8">
+              <div className="bg-black/40 backdrop-blur-xl border border-gray-800 rounded-[2rem] p-8">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-lime-400 mb-6 underline underline-offset-8">Article Details</h4>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <User className="h-4 w-4 text-gray-500" />
+                    <div>
+                      <p className="text-[9px] uppercase text-gray-500 font-bold">Written By</p>
+                      <p className="text-sm font-bold">{post.author}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Calendar className="h-4 w-4 text-gray-500" />
+                    <div>
+                      <p className="text-[9px] uppercase text-gray-500 font-bold">Published</p>
+                      <p className="text-sm font-bold">{post.date}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -190,48 +135,26 @@ export default function BlogPostPage({ params }: { params: { id: string } }) {
       </article>
 
       {/* Related Posts */}
-      <section className="py-16 bg-neutral-900 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8">Related Articles</h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {relatedPosts.slice(0, 2).map((relatedPost: any) => (
+      <section className="mt-24 py-20 bg-white/[0.02] border-t border-gray-800 px-4 sm:px-10">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-3xl font-extrabold mb-12 tracking-tight uppercase">
+            Keep <span className="text-lime-400 italic font-black">Reading</span>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {relatedPosts.map((related: any) => (
               <article
-                key={relatedPost.id}
-                className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl overflow-hidden border border-gray-800 hover:border-lime-400/30 transition-all duration-300 group"
+                key={related.id}
+                className="group relative flex flex-col bg-black/40 backdrop-blur-xl border border-gray-800 rounded-[2rem] overflow-hidden transition-all duration-500 hover:border-lime-400/50 hover:-translate-y-2"
               >
-                <div className="relative h-40 overflow-hidden">
-                  <img
-                    src={relatedPost.image}
-                    alt={relatedPost.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute top-3 left-3">
-                    <span className="bg-lime-400/90 text-black text-xs font-bold px-2 py-1 rounded-full">
-                      {relatedPost.category}
-                    </span>
-                  </div>
+                <Link href={`/blog/${related.id}`} className="absolute inset-0 z-20" />
+                <div className="relative aspect-video overflow-hidden">
+                  <img src={related.image} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
                 </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-bold mb-2 group-hover:text-lime-400 transition-colors line-clamp-2">
-                    {relatedPost.title}
-                  </h3>
-                  <div className="flex items-center text-sm text-gray-400 mt-3">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    <span>
-                      {new Date(relatedPost.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
+                <div className="p-8">
+                  <div className="flex items-center gap-2 text-white font-bold uppercase tracking-widest text-[10px] group-hover:text-lime-400 transition-all">
+                    View Article <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-2" />
                   </div>
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="mt-4 border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white group-hover:border-lime-400/30"
-                  >
-                    <Link href={`/blog/${relatedPost.id}`}>Read More</Link>
-                  </Button>
+                  <h3 className="text-xl font-extrabold mt-4 leading-tight group-hover:text-lime-400 transition-colors">{related.title}</h3>
                 </div>
               </article>
             ))}

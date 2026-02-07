@@ -3,55 +3,50 @@ import { Features } from "@/components/features";
 import Script from "next/script";
 import { Facebook, Instagram, Twitter } from "lucide-react";
 import Link from "next/link";
-import { PrismaClient } from "@prisma/client";
 import { HomeProductGrid } from "@/components/home-product-grid";
-
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
-/**
- * E-commerce footer component
- */
 const EcommerceFooter = () => {
   return (
     <footer className="border-t border-white/10 mt-12 py-8">
       <div className="container mx-auto px-4 text-center text-gray-400">
-        {/* Footer navigation sections */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8 text-left">
           <div>
-            <h4 className="font-bold text-white mb-3">Shop</h4>
+            <h4 className="font-bold text-white mb-3">Collections</h4>
             <ul className="space-y-2 text-sm">
+              {/* Syncing footer with your premium category names */}
               <li>
                 <Link
-                  href="/products?category=electronics"
+                  href="/products?category=Horology"
                   className="hover:text-lime-400"
                 >
-                  Electronics
+                  Horology
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/products?category=fashion"
+                  href="/products?category=Future+Tech"
                   className="hover:text-lime-400"
                 >
-                  Fashion
+                  Future Tech
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/products?category=home"
+                  href="/products?category=Acoustic+Art"
                   className="hover:text-lime-400"
                 >
-                  Home Goods
+                  Acoustic Art
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/products?category=sale"
+                  href="/products?category=Automotive"
                   className="hover:text-lime-400"
                 >
-                  On Sale
+                  Automotive
                 </Link>
               </li>
             </ul>
@@ -67,11 +62,6 @@ const EcommerceFooter = () => {
               <li>
                 <Link href="/careers" className="hover:text-lime-400">
                   Careers
-                </Link>
-              </li>
-              <li>
-                <Link href="/press" className="hover:text-lime-400">
-                  Press
                 </Link>
               </li>
             </ul>
@@ -112,7 +102,7 @@ const EcommerceFooter = () => {
             </ul>
           </div>
         </div>
-        {/* Social media links */}
+
         <div className="flex justify-center gap-6 mb-6">
           <Link href="#" aria-label="Facebook">
             <Facebook className="h-6 w-6 hover:text-lime-400" />
@@ -124,7 +114,7 @@ const EcommerceFooter = () => {
             <Instagram className="h-6 w-6 hover:text-lime-400" />
           </Link>
         </div>
-        {/* Copyright information */}
+
         <p className="text-sm">
           &copy; {new Date().getFullYear()} Luxurious Innovation. All Rights
           Reserved.
@@ -134,27 +124,17 @@ const EcommerceFooter = () => {
   );
 };
 
-// Fetch data directly on the server
 async function getProducts() {
   try {
     const products = await prisma.product.findMany({
       take: 100,
       include: {
-        brand: true,
         category: true,
-        variants: true,
       },
       orderBy: {
         createdAt: "desc",
       },
     });
-
-    // We need to serialize the Decimal/Date types if passing to client components
-    // or just let Next.js handle it (it usually does automatically in newer versions,
-    // but sometimes complains about plain objects).
-    // Let's create a safe serializable object map if needed.
-    // Actually, Next.js Server Actions / Component props serialization handles Date/Decimal fine in recent versions?
-    // Decimal from Prisma mocks JSON.stringify but React props might complain.
     return JSON.parse(JSON.stringify(products));
   } catch (error) {
     console.error("Database Error:", error);
@@ -162,38 +142,26 @@ async function getProducts() {
   }
 }
 
-/**
- * Main homepage component (Server Component)
- */
 export default async function Page() {
   const products = await getProducts();
 
-  /**
-   * Structured data for SEO purposes
-   */
   const pageStructuredData = {
     "@context": "https://schema.org",
-    "@type": "WebPage",
-    "@id": "https://luxuriousinnovation.com/",
-    name: "Luxurious Innovation | The Pinnacle of Excellence",
+    "@type": "WebSite", // Changed to WebSite for the root homepage SEO
+    name: "Luxurious Innovation",
     description: "Shop the latest in luxury technology and artifacts.",
     url: "https://luxuriousinnovation.com/",
   };
 
   return (
     <>
-      <main className="min-h-[100dvh] text-white flex flex-col justify-center align-middle relative">
+      <main className="min-h-screen text-white relative">
         <Hero />
-        {/* Client Demo Badge removed as requested */}
         <Features />
-
-        {/* Client Component for Interaction */}
         <HomeProductGrid initialProducts={products} />
-
         <EcommerceFooter />
       </main>
 
-      {/* Structured data scripts for SEO */}
       <Script
         id="page-structured-data"
         type="application/ld+json"

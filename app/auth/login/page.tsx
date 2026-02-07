@@ -1,13 +1,20 @@
 "use client";
 
-import type React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { AlertCircle, Eye, EyeOff, User } from "lucide-react";
+import {
+  AlertCircle,
+  Eye,
+  EyeOff,
+  User,
+  ArrowRight,
+  ShieldCheck,
+} from "lucide-react";
+import { SiteLayout } from "@/components/site-layout";
 
 export default function UserLogin() {
   const [email, setEmail] = useState("");
@@ -22,191 +29,124 @@ export default function UserLogin() {
     setError("");
     setIsLoading(true);
 
-    // Simple client-side authentication simulation
     setTimeout(() => {
-      // In a real app, this would be an API call
       if (email && password) {
-        // Set a cookie that expires in 7 days
         const expiryDate = new Date();
         expiryDate.setTime(expiryDate.getTime() + 7 * 24 * 60 * 60 * 1000);
         document.cookie = `user-session=authenticated; path=/; expires=${expiryDate.toUTCString()}`;
-        router.push("/"); // Redirect to home page
+        router.push("/");
       } else {
         setError("Please enter valid credentials");
       }
       setIsLoading(false);
     }, 1000);
   };
-
   return (
-    <div className="min-h-screen flex flex-col md:flex-row animate-fadeIn">
-      {/* Left side - Branding (hidden on mobile) */}
-      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-lime-600 to-green-600 p-6 md:p-8 flex-col justify-between animate-slideInLeft">
-        <div className="animate-fadeInUp delay-100">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-black rounded-lg flex items-center justify-center transform transition-transform hover:scale-105">
-              <span className="text-lime-400 font-bold text-sm md:text-lg">
-                SB
-              </span>
-            </div>
-            <span className="text-lg md:text-2xl font-semibold text-black">
-              Skitbit
-            </span>
-          </div>
-          <h1 className="text-2xl md:text-3xl font-bold text-black mt-6 md:mt-8 animate-fadeInUp delay-200">
-            Welcome Back
-          </h1>
-          <p className="text-lime-900 mt-2 md:mt-3 text-sm md:text-base max-w-md animate-fadeInUp delay-300">
-            Sign in to access your account and manage your orders, wishlist, and
-            preferences.
-          </p>
-        </div>
-        <div className="mt-auto text-lime-900 text-xs md:text-sm animate-fadeIn delay-500">
-          © 2025 Skitbit. All rights reserved.
-        </div>
-      </div>
-
-      {/* Right side - login form */}
-      <div className="flex-1 flex flex-col items-center justify-center p-3 md:p-6 animate-slideInRight">
-        {/* Mobile header - only visible on mobile */}
-        <div className="flex md:hidden items-center gap-2 mb-5 w-full animate-fadeInDown">
-          <div className="w-7 h-7 bg-lime-400 rounded-lg flex items-center justify-center transform transition-transform hover:scale-105">
-            <span className="text-black font-bold text-xs">SB</span>
-          </div>
-          <span className="text-lg font-semibold text-white">Skitbit</span>
-        </div>
-
-        <div className="w-full max-w-xs md:max-w-md animate-fadeInUp delay-100">
-          <div className="text-center mb-5 md:mb-6 animate-pulse-subtle">
-            <h2 className="text-lg md:text-xl font-bold text-white animate-fadeIn">
-              Sign in to your account
-            </h2>
-            <p className="text-white mt-1 text-xs md:text-sm animate-fadeIn delay-100">
-              Enter your credentials to access your account
-            </p>
+    <SiteLayout>
+      <div className="w-full flex items-center justify-center px-6 overflow-hidden">
+        {/* Main Interface Wrapper */}
+        <div className="relative w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 rounded-b-2xl overflow-hidden h-[520px]">
+          {/* Left Side: Luxury Visual */}
+          <div className="relative hidden lg:flex flex-col items-center justify-center p-12 overflow-hidden">
+            <img
+              src="https://img.freepik.com/free-vector/user-verification-unauthorized-access-prevention-private-account-authentication-cyber-security-people-entering-login-password-safety-measures_335657-3530.jpg?semt=ais_hybrid&w=740&q=80"
+              alt="Secure Access"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
           </div>
 
-          <form
-            onSubmit={handleLogin}
-            className="space-y-3 md:space-y-4 animate-fadeInUp delay-200"
-          >
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 text-red-300 px-2 py-2 md:px-3 md:py-2 rounded-lg flex items-start gap-2 animate-shake">
-                <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                <span className="text-xs md:text-sm">{error}</span>
-              </div>
-            )}
-
-            <div className="space-y-1.5 mt-10 animate-fadeInUp delay-300">
-              <Label
-                htmlFor="email"
-                className="text-neutral-200 text-xs md:text-sm animate-fadeIn"
-              >
-                Email
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
-                className="bg-[#00000000] hover:border-white-800 text-white pr-10 h-9 md:h-10 text-xs md:text-sm transition-all duration-300 transform hover:scale-[1.02]"
-                required
-              />
+          {/* Right Side: Login Form */}
+          <div className="flex flex-col justify-center p-10 lg:p-16 relative">
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-white">Sign In</h1>
+              <p className="text-neutral-500 text-sm mt-1">
+                Access your account
+              </p>
             </div>
 
-            <div className="space-y-1.5 mb-10 animate-fadeInUp delay-400">
-              <div className="flex items-center justify-between">
-                <Label
-                  htmlFor="password"
-                  className="text-neutral-200 text-xs md:text-sm animate-fadeIn"
+            <form onSubmit={handleLogin} className="space-y-4">
+              {error && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="bg-red-500/10 border border-red-500/30 text-red-300 px-3 py-2 rounded-xl flex items-center gap-2 text-xs"
                 >
-                  Password
-                </Label>
-                <button
-                  type="button"
-                  className="text-xs text-lime-400 hover:underline transform transition-all hover:scale-105"
-                >
-                  Forgot?
-                </button>
-              </div>
-              <div className="relative">
+                  <AlertCircle className="h-4 w-4" /> {error}
+                </motion.div>
+              )}
+
+              <div className="space-y-1">
                 <Input
-                  id="password"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email Address"
+                  className="w-full bg-white border rounded-xl p-4 h-12 text-sm outline-none focus:border-lime-400 transition-all text-black placeholder:text-neutral-600"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1 relative">
+                <Input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="bg-[#00000000] hover:border-white-800 text-white pr-10 h-9 md:h-10 text-xs md:text-sm transition-all duration-300 transform hover:scale-[1.02]"
+                  placeholder="Password"
+                  className="w-full bg-white border rounded-xl p-4 h-12 text-sm outline-none focus:border-lime-400 transition-all text-black placeholder:text-neutral-600"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-white-400 text-white transition-all duration-200 hover:text-lime-400 hover:scale-110 active:scale-95"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white transition-colors"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 transition-transform duration-200" />
+                    <EyeOff className="h-4 w-4 text-black" />
                   ) : (
-                    <Eye className="h-4 w-4 transition-transform duration-200" />
+                    <Eye className="h-4 w-4 text-black" />
                   )}
                 </button>
               </div>
-            </div>
 
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full h-9 md:h-10 bg-lime-400 text-black hover:bg-lime-400/90 text-xs md:text-sm transform transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-lg"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Signing in...
-                </>
-              ) : (
-                "Sign in"
-              )}
-            </Button>
-          </form>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  className="text-xs text-lime-400 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
 
-          <div className="mt-3 md:mt-4 text-center animate-fadeInUp delay-500">
-            <p className="text-neutral-400 text-xs">
-              Don't have an account?{" "}
-              <Link
-                href="/auth/signup"
-                className="text-lime-400 hover:underline transform transition-all hover:scale-105 inline-block"
+              <Button
+                disabled={isLoading}
+                className="w-full bg-lime-400 text-black py-6 rounded-full text-xs font-bold hover:bg-lime-500 transition-all flex items-center justify-center gap-2"
               >
-                Sign up
-              </Link>
-            </p>
-          </div>
+                {isLoading ? "Verifying..." : "Sign In"}{" "}
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </form>
 
-          <div className="mt-5 md:mt-6 animate-fadeIn delay-600">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-neutral-800"></div>
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="px-2 text-neutral-400 bg-black">
-                  Or continue as
-                </span>
-              </div>
-            </div>
-
-            <div className="mt-3 md:mt-4">
+            <div className="mt-8 pt-6 border-t border-white/5 flex flex-col gap-4">
               <Button
                 variant="outline"
-                className="w-full h-9 md:h-10 border-neutral-800 text-black text-xs md:text-sm bg-slate-300 hover:bg-white transform transition-all duration-300 hover:scale-105 active:scale-95 hover:shadow-lg"
+                className="w-full h-10 border-white/10 text-white text-xs bg-white/5 hover:bg-white"
                 onClick={() => router.push("/")}
               >
-                <User className="mr-2 h-4 w-4" />
-                Guest
+                <User className="mr-2 h-4 w-4" /> Continue as Guest
               </Button>
+              <p className="text-xs text-neutral-500 text-center">
+                New here?{" "}
+                <Link
+                  href="/auth/signup"
+                  className="text-white hover:text-lime-400 font-bold ml-1 transition-colors"
+                >
+                  Create Account
+                </Link>
+              </p>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </SiteLayout>
   );
 }

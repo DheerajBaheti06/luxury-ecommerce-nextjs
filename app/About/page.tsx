@@ -1,36 +1,59 @@
 import { AboutContent } from "@/components/about-content";
 import { prisma } from "@/lib/prisma";
+import { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Main About Page (Server Component)
- */
-export default async function AboutPage() {
-  // Fetch featured products (limit to 4 for the about page)
-  let featuredProducts = [];
+export const metadata: Metadata = {
+  title: "Our Story",
+  description:
+    "Discover the intersection of high-end craftsmanship and future technology. Skitbit curates only the finest in Horology, Tech, and Design.",
+};
+
+async function getFeaturedProducts() {
   try {
     const products = await prisma.product.findMany({
       take: 4,
+      where: {
+        price: { gt: 1000 },
+      },
       include: {
         brand: true,
         category: true,
       },
       orderBy: {
-        ratingsAverage: "desc", // Show highest rated products
-      },
-      where: {
-        price: {
-          gt: 1000, // Show expensive luxury items
-        },
+        ratingsAverage: "desc",
       },
     });
 
-    // Serialize for client component
-    featuredProducts = JSON.parse(JSON.stringify(products));
-  } catch (error) {
-    console.error("Failed to fetch about page products", error);
-  }
+    if (products.length === 0) {
+      return await prisma.product.findMany({
+        take: 4,
+        include: {
+          brand: true,
+          category: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }
 
-  return <AboutContent featuredProducts={featuredProducts} />;
+    return products;
+  } catch (error) {
+    console.error("Database Error on About Page:", error);
+    return [];
+  }
+}
+
+export default async function AboutPage() {
+  const products = await getFeaturedProducts();
+
+  const serializedProducts = JSON.parse(JSON.stringify(products));
+
+  return (
+    <main className="min-h-screen bg-transparent relative">
+      <AboutContent featuredProducts={serializedProducts} />
+    </main>
+  );
 }

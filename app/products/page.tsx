@@ -74,7 +74,7 @@ export default async function ProductsPage({
     const serializedProducts = JSON.parse(JSON.stringify(products));
 
     return (
-      <div className="min-h-screen bg-black text-white pt-24 pb-12">
+      <div className="min-h-screen text-white pt-24 pb-12">
         <ProductGridClient
           products={serializedProducts}
           categories={categories}
@@ -90,7 +90,7 @@ export default async function ProductsPage({
   } catch (error) {
     console.error("Failed to load products page:", error);
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+      <div className="min-h-screen text-white flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-red-500 mb-2">
             Error Loading Products
